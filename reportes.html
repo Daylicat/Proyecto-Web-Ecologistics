@@ -9,7 +9,6 @@
 </head>
 <body>
 
-  <!-- NAV -->
   <nav>
     <div class="nav-left">
       <a href="index.html" class="logo">
@@ -34,7 +33,6 @@
 
   <main>
 
-    <!-- PAGE HEADER -->
     <div class="rep-header">
       <div class="rep-header-left">
         <h1 class="rep-header-title">Reportes y Análisis</h1>
@@ -60,7 +58,7 @@
         </div>
         <div class="rep-control-group" style="justify-content:flex-end">
           <span class="rep-control-label">&nbsp;</span>
-          <button class="rep-export-btn" onclick="exportarPDF()">
+          <button class="rep-export-btn" onclick="">
             <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Exportar PDF
           </button>
@@ -68,12 +66,9 @@
       </div>
     </div>
 
-    <!-- KPI CARDS -->
     <div class="rep-kpi-grid" id="kpiGrid">
-      <!-- injected by JS -->
-    </div>
+      </div>
 
-    <!-- MOVEMENTS TABLE -->
     <div class="card rep-table-card">
       <div class="rep-table-header">
         <span class="rep-table-title">Detalle de Movimientos</span>
@@ -98,8 +93,7 @@
           </tr>
         </thead>
         <tbody id="movTable">
-          <!-- injected by JS -->
-        </tbody>
+          </tbody>
       </table>
       <a href="#" class="rep-view-more" id="viewMoreBtn" onclick="loadMore(event)">Ver más movimientos</a>
     </div>

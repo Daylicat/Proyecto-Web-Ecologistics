@@ -1,14 +1,11 @@
-// ═══════════════════════════════════════════════════════════════
-//  nav.js — Campanita de alertas compartida en todas las páginas
-//  Requiere: data.js cargado antes
-// ═══════════════════════════════════════════════════════════════
+
 
 (function () {
   function initNav() {
     const bell = document.querySelector('.notif-btn');
     if (!bell) return;
 
-    // ── Badge de conteo ──────────────────────────────────────────
+    // ── Badge de conteo 
     const count = getTotalAlertCount();
     const dot   = bell.querySelector('.notif-dot');
     if (dot && count > 0) {
@@ -21,7 +18,7 @@
       `;
     }
 
-    // ── Inyectar dropdown ────────────────────────────────────────
+    // ── Inyectar dropdown 
     if (!document.getElementById('notifDropdown')) {
       const dropdown = document.createElement('div');
       dropdown.id        = 'notifDropdown';
@@ -30,7 +27,7 @@
       bell.appendChild(dropdown);
     }
 
-    // ── Toggle ───────────────────────────────────────────────────
+    // ── Toggle 
     bell.addEventListener('click', function (e) {
       e.stopPropagation();
       const dd = document.getElementById('notifDropdown');
@@ -105,6 +102,5 @@
       </div>`;
   }
 
-  // Scripts al final del body: DOM ya está listo
   initNav();
 })();

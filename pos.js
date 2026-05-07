@@ -1,4 +1,4 @@
-// ─── pos.js ──────────────────────────────────────────────────────
+
 
 const CATALOG = {
   'BAT-LI-100': { name: 'Batería Litio 100Ah',        category: 'Storage',    stock: 124, price: 480.00,  icon: 'battery' },
@@ -24,7 +24,7 @@ const ICONS = {
   tool:    `<svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`,
 };
 
-// ─── State ───────────────────────────────────────────────────────
+
 let items = {
   'BAT-LI-100': { ...CATALOG['BAT-LI-100'], sku: 'BAT-LI-100', qty: 2 },
   'MC4-CON-01': { ...CATALOG['MC4-CON-01'], sku: 'MC4-CON-01', qty: 15 },
@@ -33,7 +33,7 @@ let items = {
   'CAB-SOL-6M': { ...CATALOG['CAB-SOL-6M'], sku: 'CAB-SOL-6M', qty: 30 },
 };
 
-// ─── Render ──────────────────────────────────────────────────────
+
 function render() {
   const list = document.getElementById('itemsList');
   const keys = Object.keys(items);
@@ -79,8 +79,6 @@ function render() {
 
   updateSummary();
 }
-
-// ─── Summary ─────────────────────────────────────────────────────
 function updateSummary() {
   const keys       = Object.keys(items);
   const totalUnits = keys.reduce((s, k) => s + items[k].qty, 0);
@@ -109,7 +107,7 @@ function updateSummary() {
   confirmBtn.disabled = keys.length === 0 || status === 'critical';
 }
 
-// ─── Add item ────────────────────────────────────────────────────
+
 function addFromInput() {
   const input = document.getElementById('scanInput');
   const raw   = input.value.trim().toUpperCase().replace(/^#/, '');
@@ -148,7 +146,7 @@ function flashScan(bg, border) {
   setTimeout(() => { wrap.style.background = ''; wrap.style.borderColor = 'var(--green)'; }, 500);
 }
 
-// ─── Qty controls ────────────────────────────────────────────────
+
 function changeQty(sku, delta) {
   if (!items[sku]) return;
   items[sku].qty = Math.max(1, items[sku].qty + delta);
@@ -163,7 +161,6 @@ function setQty(sku, val) {
   }
 }
 
-// ─── Remove / Clear ──────────────────────────────────────────────
 function removeItem(sku) {
   delete items[sku];
   render();
@@ -177,7 +174,6 @@ function clearAll() {
   }
 }
 
-// ─── Confirm & Success ───────────────────────────────────────────
 function confirmarSalida() {
   const dest = document.getElementById('destInput').value.trim();
   if (!dest) {
@@ -192,7 +188,7 @@ function confirmarSalida() {
   const totalUnits = keys.reduce((s, k) => s + items[k].qty, 0);
   const monto      = keys.reduce((s, k) => s + items[k].qty * items[k].price, 0);
 
-  // Build product list string
+  
   let productStr;
   if (keys.length === 1) {
     const it = items[keys[0]];
@@ -213,7 +209,7 @@ function confirmarSalida() {
   const bar     = document.getElementById('successBar');
 
   overlay.classList.add('show');
-  // trigger bar animation after paint
+  
   requestAnimationFrame(() => requestAnimationFrame(() => bar.classList.add('animate')));
 
   setTimeout(() => {
@@ -232,13 +228,11 @@ function resetPOS() {
   document.getElementById('scanInput').focus();
 }
 
-// ─── Cancel ──────────────────────────────────────────────────────
 function cancelar() {
   if (Object.keys(items).length === 0 || confirm('¿Cancelar la operación? Se perderán los artículos escaneados.')) {
     resetPOS();
   }
 }
 
-// ─── Init ────────────────────────────────────────────────────────
 render();
 document.getElementById('scanInput').focus();

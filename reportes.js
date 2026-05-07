@@ -1,4 +1,4 @@
-// ─── reportes.js ─────────────────────────────────────────────────
+
 
 const AVATAR_COLORS = ['#667eea', '#2DBE6C', '#F59E0B', '#EF4444', '#3B82F6', '#8B5CF6'];
 
@@ -25,7 +25,7 @@ const KPI_DATA = {
 let visibleRows = 3;
 let activeFilter = null;
 
-// ─── KPI Render ──────────────────────────────────────────────────
+
 function renderKPIs() {
   const type = document.getElementById('reportType').value;
   const d    = KPI_DATA[type] || KPI_DATA.salidas;
@@ -55,7 +55,7 @@ function renderKPIs() {
   `).join('');
 }
 
-// ─── Table Render ────────────────────────────────────────────────
+
 function renderTable() {
   let data = [...MOVEMENTS];
   if (activeFilter === 'alto') data = data.filter(r => r.amount >= 1000);
@@ -86,7 +86,7 @@ function renderTable() {
   btn.style.display = visibleRows >= data.length ? 'none' : 'block';
 }
 
-// ─── Controls ────────────────────────────────────────────────────
+
 function applyFilters() { visibleRows = 3; renderKPIs(); renderTable(); }
 
 function loadMore(e) {
@@ -121,7 +121,7 @@ function refresh() {
   }, 600);
 }
 
-// ─── Date range picker (simple toggle) ───────────────────────────
+
 const DATE_RANGES = [
   'Oct 01, 2023 - Oct 31, 2023',
   'Sep 01, 2023 - Sep 30, 2023',
@@ -136,7 +136,7 @@ function toggleDateMenu() {
   applyFilters();
 }
 
-// ─── Export PDF ──────────────────────────────────────────────────
+
 function exportarPDF() {
   const btn = document.querySelector('.rep-export-btn');
   const orig = btn.innerHTML;
@@ -150,7 +150,6 @@ function exportarPDF() {
   }, 1200);
 }
 
-// ─── Init ────────────────────────────────────────────────────────
 const style = document.createElement('style');
 style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
 document.head.appendChild(style);
@@ -158,7 +157,7 @@ document.head.appendChild(style);
 renderKPIs();
 renderTable();
 
-// Update nav links across all pages when Reportes is active
+
 document.querySelectorAll('.nav-links a').forEach(a => {
   if (a.href.includes('reportes')) a.classList.add('active');
 });

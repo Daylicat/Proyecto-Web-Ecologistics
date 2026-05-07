@@ -1,4 +1,4 @@
-// inventory.js — requiere data.js cargado antes
+
 
 var INV_ICONS = {
   bolt:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
@@ -24,7 +24,6 @@ var invCurrentPage  = 1;
 var invActiveFilter = 'todos';
 var invSearchQuery  = '';
 
-// ── Helpers ──────────────────────────────────────────────────────
 
 function invStatusClass(s) {
   if (s === 'critico')    return 'status-critico';
@@ -54,7 +53,7 @@ function invRowClass(s) {
   return '';
 }
 
-// ── Filtrado ─────────────────────────────────────────────────────
+//Filtrado 
 
 function invGetFiltered() {
   var list = (typeof ECO_PRODUCTS !== 'undefined') ? ECO_PRODUCTS : [];
@@ -69,7 +68,6 @@ function invGetFiltered() {
   });
 }
 
-// ── Render ───────────────────────────────────────────────────────
 
 function invRender() {
   var tbody   = document.getElementById('tableBody');
@@ -149,7 +147,6 @@ function invRender() {
   nextBtn.disabled = (invCurrentPage === pages);
 }
 
-// ── Controles públicos (llamados desde HTML) ──────────────────────
 
 function invChangePage(dir) {
   var pages = Math.ceil(invGetFiltered().length / INV_PAGE_SIZE);
@@ -172,7 +169,7 @@ function invFilterTable() {
   invRender();
 }
 
-// ── Campanita ────────────────────────────────────────────────────
+// Notificacion
 
 function invInitNotif() {
   var notifBtn = document.getElementById('notifBtn');
@@ -236,8 +233,7 @@ function invInitNotif() {
   });
   document.addEventListener('click', function() { dd.classList.remove('open'); });
 }
-
-// ── Filtro desde URL: inventory.html?filter=critico ───────────────
+//Filtros URL
 
 function invApplyUrlFilter() {
   if (!window.location.search) return;
@@ -255,7 +251,7 @@ function invApplyUrlFilter() {
   }
 }
 
-// ── Arranque ─────────────────────────────────────────────────────
+
 invApplyUrlFilter();
 invInitNotif();
 invRender();

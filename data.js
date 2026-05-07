@@ -1,6 +1,4 @@
-// ═══════════════════════════════════════════════════════════════
-//  data.js — Fuente de datos compartida entre todas las páginas
-// ═══════════════════════════════════════════════════════════════
+
 
 const ECO_PRODUCTS = [
   { id: 'COP-25-001', name: 'Cables de Cobre 2.5mm',    category: 'Electrical', stock: 12,  min: 50,  status: 'crítico',   icon: 'bolt',    valor: 8.50  },
@@ -30,7 +28,7 @@ function getTotalAlertCount() {
   return a.critico.length + a.bajoStock.length + a.sinStock.length;
 }
 
-// Catalog format compatible with pos.js
+
 const ECO_CATALOG = ECO_PRODUCTS.reduce((acc, p) => {
   acc[p.id] = { name: p.name, category: p.category, stock: p.stock, icon: p.icon, valor: p.valor };
   return acc;

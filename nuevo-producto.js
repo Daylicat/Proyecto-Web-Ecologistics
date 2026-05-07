@@ -1,13 +1,10 @@
-// ─── nuevo-producto.js ──────────────────────────────────────────
-// QR generation, form validation, download & print.
-// Requires: qrcodejs (loaded via CDN in HTML)
-// ────────────────────────────────────────────────────────────────
+
 
 let qrInstance = null;
 let qrReady    = false;
 let debounceTimer = null;
 
-// ─── QR Generation ───────────────────────────────────────────────
+
 function generateQR(sku, name) {
   const wrap        = document.getElementById('qrWrap');
   const placeholder = document.getElementById('qrPlaceholder');
@@ -16,7 +13,6 @@ function generateQR(sku, name) {
   const btnD        = document.getElementById('btnDescargar');
   const btnP        = document.getElementById('btnImprimir');
 
-  // Clear previous
   if (qrInstance) {
     qrInstance.clear();
     qrInstance = null;
@@ -46,7 +42,7 @@ function generateQR(sku, name) {
     correctLevel:  QRCode.CorrectLevel.H,
   });
 
-  // Update meta
+  
   document.getElementById('qrSku').textContent  = sku  || '';
   document.getElementById('qrName').textContent = name || '';
 
@@ -57,7 +53,7 @@ function generateQR(sku, name) {
   btnD.disabled = btnP.disabled = false;
 }
 
-// ─── Field change handler (debounced) ────────────────────────────
+
 function onFieldChange() {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => {
@@ -67,7 +63,6 @@ function onFieldChange() {
   }, 350);
 }
 
-// ─── Download QR ─────────────────────────────────────────────────
 function descargarQR() {
   if (!qrReady) return;
   const canvas = document.querySelector('#qrWrap canvas');
@@ -80,7 +75,7 @@ function descargarQR() {
   link.click();
 }
 
-// ─── Print QR ────────────────────────────────────────────────────
+
 function imprimirQR() {
   if (!qrReady) return;
   const canvas = document.querySelector('#qrWrap canvas');
@@ -110,7 +105,7 @@ function imprimirQR() {
   win.document.close();
 }
 
-// ─── Register product ────────────────────────────────────────────
+
 function registrar() {
   const name  = document.getElementById('prodName').value.trim();
   const sku   = document.getElementById('prodSku').value.trim();
@@ -119,7 +114,7 @@ function registrar() {
   const min   = document.getElementById('prodMin').value;
 
   if (!name || !sku || !cat) {
-    // Highlight missing fields
+   
     ['prodName', 'prodSku', 'prodCategory'].forEach(id => {
       const el = document.getElementById(id);
       if (!el.value.trim()) {
@@ -131,7 +126,7 @@ function registrar() {
     return;
   }
 
-  // Success — redirect back to inventory
+  
   const btn = document.querySelector('.np-submit');
   btn.textContent = '✓ Producto registrado';
   btn.style.background = '#15803D';
@@ -142,7 +137,7 @@ function registrar() {
   }, 1200);
 }
 
-// ─── ESC to close ────────────────────────────────────────────────
+
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') window.location.href = 'inventory.html';
 });

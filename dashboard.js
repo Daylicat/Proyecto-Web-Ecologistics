@@ -1,15 +1,11 @@
-// ═══════════════════════════════════════════════════════════════
-//  dashboard.js — Contenido dinámico del Dashboard
-//  Requiere: data.js
-// ═══════════════════════════════════════════════════════════════
 
 (function () {
 
-  // ── Alertas dinámicas desde data.js ─────────────────────────
+  // Alertas dinámicas 
   function renderAlertas() {
     const alerts = getAlerts();
 
-    // Alerta crítica principal (primera del listado)
+    // Alerta crítica principal 1
     const criticos = alerts.critico;
     const alertaCriticaEl = document.getElementById('alertaCritica');
 
@@ -43,7 +39,7 @@
         </div>`;
     }
 
-    // Warnings (bajo stock + sin stock, máx 2 tarjetas)
+    // Warnings (
     const warnings = [...alerts.bajoStock, ...alerts.sinStock].slice(0, 2);
     const warningsEl = document.getElementById('alertasWarning');
     if (warningsEl && warnings.length > 0) {
