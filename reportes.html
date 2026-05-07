@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoLogistics — Reportes</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-left">
+      <a href="index.html" class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L3 7l9 5 9-5-9-5zM3 17l9 5 9-5M3 12l9 5 9-5"/></svg>
+        </div>
+        <span class="logo-text">EcoLogistics</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">Dashboard</a></li>
+        <li><a href="inventory.html">Inventario</a></li>
+        <li><a href="pos.html">Salidas POS</a></li>
+        <li><a href="reportes.html" class="active">Reportes</a></li>
+      </ul>
+    </div>
+    <div class="nav-right">
+      <div class="user-info">
+        <div class="user-avatar">AU</div>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- PAGE HEADER -->
+    <div class="rep-header">
+      <div class="rep-header-left">
+        <h1 class="rep-header-title">Reportes y Análisis</h1>
+        <p class="rep-header-subtitle">Historial detallado de movimientos y auditoría de stock.</p>
+      </div>
+      <div class="rep-header-controls">
+        <div class="rep-control-group">
+          <span class="rep-control-label">Rango de Fecha</span>
+          <button class="rep-date-btn" id="dateBtn" onclick="toggleDateMenu()">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span id="dateLabel">Oct 01, 2023 - Oct 31, 2023</span>
+            <svg class="rep-date-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+        <div class="rep-control-group">
+          <span class="rep-control-label">Tipo de Reporte</span>
+          <select class="rep-type-select" id="reportType" onchange="applyFilters()">
+            <option value="salidas">Salidas de Almacén</option>
+            <option value="entradas">Entradas de Stock</option>
+            <option value="auditoria">Auditoría Completa</option>
+            <option value="usuarios">Por Usuario</option>
+          </select>
+        </div>
+        <div class="rep-control-group" style="justify-content:flex-end">
+          <span class="rep-control-label">&nbsp;</span>
+          <button class="rep-export-btn" onclick="exportarPDF()">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Exportar PDF
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="rep-kpi-grid" id="kpiGrid">
+      <!-- injected by JS -->
+    </div>
+
+    <!-- MOVEMENTS TABLE -->
+    <div class="card rep-table-card">
+      <div class="rep-table-header">
+        <span class="rep-table-title">Detalle de Movimientos</span>
+        <div class="rep-table-actions">
+          <button class="rep-icon-btn" title="Filtrar" onclick="cycleFilter()">
+            <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          </button>
+          <button class="rep-icon-btn" title="Actualizar" onclick="refresh()">
+            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          </button>
+        </div>
+      </div>
+      <table class="rep-table">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Destino / Proyecto</th>
+            <th>Usuario</th>
+            <th>Fecha y Hora</th>
+            <th style="text-align:right">Monto Estimado</th>
+          </tr>
+        </thead>
+        <tbody id="movTable">
+          <!-- injected by JS -->
+        </tbody>
+      </table>
+      <a href="#" class="rep-view-more" id="viewMoreBtn" onclick="loadMore(event)">Ver más movimientos</a>
+    </div>
+
+  </main>
+
+  <script src="data.js"></script>
+  <script src="nav.js"></script>
+  <script src="reportes.js"></script>
+</body>
+</html>

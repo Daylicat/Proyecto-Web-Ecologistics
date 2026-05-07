@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoLogistics — Alta de Producto</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+  <header class="np-header">
+    <a href="inventory.html" class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L3 7l9 5 9-5-9-5zM3 17l9 5 9-5M3 12l9 5 9-5"/></svg>
+      </div>
+      <span class="logo-text">EcoLogistics</span>
+    </a>
+    <button class="np-close" onclick="window.location.href='inventory.html'" title="Cerrar">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </header>
+
+  <div class="np-main">
+    <div class="np-grid">
+
+      <!-- FORMULARIO -->
+      <div class="card np-form-card">
+        <h1 class="np-title">Alta de Producto</h1>
+        <p class="np-subtitle">Ingrese los detalles para registrar un nuevo material.</p>
+
+        <div class="np-fields">
+
+          <div class="np-group">
+            <label class="np-label">Nombre del Producto</label>
+            <input class="np-input" id="prodName" type="text" placeholder="Ej. Inversor Híbrido 5kW" oninput="onFieldChange()">
+          </div>
+
+          <div class="np-row">
+            <div class="np-group">
+              <label class="np-label">Categoría</label>
+              <select class="np-select" id="prodCategory" onchange="onFieldChange()">
+                <option value="">Seleccionar...</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Solar">Solar</option>
+                <option value="Storage">Storage</option>
+                <option value="Panels">Panels</option>
+                <option value="Cables">Cables</option>
+                <option value="Tools">Tools</option>
+              </select>
+            </div>
+            <div class="np-group">
+              <label class="np-label">SKU / Código</label>
+              <input class="np-input" id="prodSku" type="text" placeholder="ECO-INV-001" oninput="onFieldChange()">
+            </div>
+          </div>
+
+          <div class="np-row">
+            <div class="np-group">
+              <label class="np-label">Stock Inicial</label>
+              <input class="np-input" id="prodStock" type="number" placeholder="0" min="0">
+            </div>
+            <div class="np-group">
+              <label class="np-label">Stock Mínimo</label>
+              <input class="np-input" id="prodMin" type="number" placeholder="10" min="0">
+            </div>
+          </div>
+
+          <div class="np-row">
+            <div class="np-group">
+              <label class="np-label">Valor Unitario (USD)</label>
+              <input class="np-input" id="prodValor" type="number" placeholder="0.00" min="0" step="0.01" oninput="onFieldChange()">
+            </div>
+            <div class="np-group">
+              <label class="np-label">Unidad de Medida</label>
+              <select class="np-select" id="prodUnidad">
+                <option value="unidades">Unidades</option>
+                <option value="metros">Metros</option>
+                <option value="kg">Kilogramos</option>
+                <option value="piezas">Piezas</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="np-group">
+            <label class="np-label">Descripción (Opcional)</label>
+            <textarea class="np-textarea" id="prodDesc" placeholder="Detalles técnicos, ubicación o notas..."></textarea>
+          </div>
+
+        </div>
+
+        <button class="np-submit" onclick="registrar()">Registrar Producto</button>
+      </div>
+
+      <!-- DERECHA -->
+      <div class="np-right">
+
+        <div class="card np-qr-card">
+          <div class="np-qr-label">Vista Previa QR</div>
+          <div class="np-qr-wrap" id="qrWrap">
+            <div class="np-qr-placeholder">Completa el SKU y nombre<br>para generar el QR</div>
+          </div>
+          <div id="qrMeta" style="display:none">
+            <div class="np-qr-sku" id="qrSku"></div>
+            <div class="np-qr-name" id="qrName"></div>
+          </div>
+          <div id="qrMetaEmpty" style="margin-bottom:20px"></div>
+          <div class="np-qr-actions">
+            <button class="np-btn-outline" id="btnDescargar" onclick="descargarQR()" disabled>
+              <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Descargar
+            </button>
+            <button class="np-btn-outline" id="btnImprimir" onclick="imprimirQR()" disabled>
+              <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Imprimir
+            </button>
+          </div>
+        </div>
+
+        <div class="np-tip">
+          <div class="np-tip-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <div>
+            <div class="np-tip-title">Consejo de uso</div>
+            <div class="np-tip-text">Puede imprimir etiquetas QR en masa desde la sección de reportes para productos ya registrados.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="nuevo-producto.js"></script>
+</body>
+</html>

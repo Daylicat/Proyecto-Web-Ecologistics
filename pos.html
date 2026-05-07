@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoLogistics — Salida de Materiales</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    html, body { height: 100%; overflow: hidden; display: flex; flex-direction: column; }
+  </style>
+</head>
+<body>
+
+  <!-- STANDARD NAV -->
+  <nav>
+    <div class="nav-left">
+      <a href="index.html" class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L3 7l9 5 9-5-9-5zM3 17l9 5 9-5M3 12l9 5 9-5"/></svg>
+        </div>
+        <span class="logo-text">EcoLogistics</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">Dashboard</a></li>
+        <li><a href="inventory.html">Inventario</a></li>
+        <li><a href="pos.html" class="active">Salidas POS</a></li>
+        <li><a href="reportes.html">Reportes</a></li>
+      </ul>
+    </div>
+    <div class="nav-right">
+      <button class="notif-btn">
+        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke-width="2" stroke-linecap="round"/><path d="M13.73 21a2 2 0 0 1-3.46 0" stroke-width="2" stroke-linecap="round"/></svg>
+        <span class="notif-dot"></span>
+      </button>
+      <div class="user-info">
+        <div class="user-avatar">AU</div>
+        <div class="user-meta">
+          <div class="user-name">Admin User</div>
+          <div class="user-role">Warehouse Manager</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- POS WRAPPER -->
+  <div class="pos-wrapper">
+
+    <!-- POS SUB-HEADER -->
+    <header class="pos-header">
+      <div class="pos-header-left">
+        <span class="pos-title">Salida de Materiales (POS)</span>
+      </div>
+      <div class="pos-scanner-status">
+        <span class="pos-scanner-dot"></span>
+        Scanner Ready
+      </div>
+      <div class="pos-user">
+        <div class="pos-user-name">Admin User</div>
+        <div class="pos-user-station">Station 01</div>
+      </div>
+    </header>
+
+    <!-- POS LAYOUT -->
+    <div class="pos-layout">
+
+      <!-- LEFT -->
+      <div class="pos-left">
+
+        <!-- Scan input -->
+        <div class="pos-scan-wrap">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input
+            class="pos-scan-input"
+            id="scanInput"
+            type="text"
+            placeholder="Scan or enter product code (SKU / QR)..."
+            autocomplete="off"
+            onkeydown="handleScanKey(event)">
+          <button class="pos-enter-btn" onclick="addFromInput()">ENTER</button>
+        </div>
+
+        <!-- Items -->
+        <div class="pos-items-card">
+          <div class="pos-items-header">
+            <span class="pos-items-title">Artículos Escaneados</span>
+            <button class="pos-clear-btn" onclick="clearAll()">Limpiar Todo</button>
+          </div>
+          <div class="pos-items-list" id="itemsList"></div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT SIDEBAR -->
+      <aside class="pos-sidebar">
+        <div class="pos-sidebar-inner">
+
+          <div class="pos-sidebar-title">Resumen de Salida</div>
+
+          <div>
+            <div class="pos-field-label">Destinatario / Proyecto</div>
+            <input class="pos-sidebar-input" id="destInput" type="text" placeholder="Proyecto Solar - Santa Fe">
+          </div>
+
+          <div>
+            <div class="pos-field-label">Notas de Salida</div>
+            <textarea class="pos-sidebar-textarea" id="notasInput" placeholder="Referencia de orden, responsable..."></textarea>
+          </div>
+
+          <!-- SUMMARY -->
+          <div class="pos-summary">
+            <div class="pos-summary-row">
+              <span class="pos-summary-label">Total de Items</span>
+              <span class="pos-summary-val" id="totalItems">00</span>
+            </div>
+            <div class="pos-summary-row">
+              <span class="pos-summary-label">Categorías</span>
+              <span class="pos-summary-val" id="totalCats">00</span>
+            </div>
+            <div class="pos-stock-row">
+              <span class="pos-stock-label">Estado de Stock</span>
+              <span class="pos-stock-badge pos-stock-ok" id="stockBadge">Suficiente</span>
+            </div>
+
+            <div class="pos-total-row">
+              <span class="pos-total-label">Monto Total</span>
+              <span class="pos-total-val" id="montoTotal">$0.00</span>
+            </div>
+
+            <button class="pos-confirm-btn" id="confirmBtn" onclick="confirmarSalida()" disabled>
+              <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              Confirmar Salida
+            </button>
+            <button class="pos-cancel-btn" onclick="cancelar()">Cancelar Operación</button>
+          </div>
+
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- SUCCESS OVERLAY -->
+  <div class="pos-success-overlay" id="successOverlay">
+    <div class="pos-success-card">
+      <div class="pos-success-icon">
+        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <div class="pos-success-title">¡Transacción Exitosa!</div>
+      <div class="pos-success-msg" id="successMsg"></div>
+      <div class="pos-success-bar">
+        <div class="pos-success-bar-fill" id="successBar"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="nav.js"></script>
+  <script src="pos.js"></script>
+</body>
+</html>
