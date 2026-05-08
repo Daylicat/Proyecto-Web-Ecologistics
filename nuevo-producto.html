@@ -7,6 +7,52 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    /* Overlay de éxito al registrar */
+    .np-success-overlay {
+      position: fixed; inset: 0;
+      background: rgba(15,23,42,.55);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 300; opacity: 0; pointer-events: none; transition: opacity .25s;
+    }
+    .np-success-overlay.show { opacity: 1; pointer-events: all; }
+    .np-success-card {
+      background: var(--white); border-radius: 16px; padding: 44px 40px;
+      max-width: 400px; width: 90%; text-align: center;
+      box-shadow: 0 24px 64px rgba(0,0,0,.18);
+      transform: scale(.9) translateY(16px); transition: transform .3s;
+    }
+    .np-success-overlay.show .np-success-card { transform: scale(1) translateY(0); }
+    .np-success-icon-wrap {
+      width: 68px; height: 68px; background: var(--green-light);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 22px;
+    }
+    .np-success-icon-wrap svg { width: 34px; height: 34px; stroke: var(--green); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .np-success-heading { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -0.3px; }
+    .np-success-sub { font-size: 14px; color: var(--slate); line-height: 1.5; margin-bottom: 28px; }
+    .np-success-sub strong { color: var(--text); font-weight: 600; }
+    .np-success-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .np-success-btn-inv {
+      padding: 12px; background: var(--green); color: #fff;
+      border: none; border-radius: 9px; font-family: 'DM Sans', sans-serif;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: background .15s;
+    }
+    .np-success-btn-inv:hover { background: var(--green-dark); }
+    .np-success-btn-new {
+      padding: 12px; background: var(--white); color: var(--slate);
+      border: 1.5px solid var(--border); border-radius: 9px; font-family: 'DM Sans', sans-serif;
+      font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s;
+    }
+    .np-success-btn-new:hover { background: var(--bg); }
+    .np-success-sku {
+      display: inline-block; font-family: 'DM Mono', monospace;
+      background: var(--green-light); color: var(--green-dark);
+      padding: 3px 10px; border-radius: 6px; font-size: 13px;
+      font-weight: 600; margin-bottom: 16px;
+    }
+  </style>
 </head>
 <body>
 
@@ -90,10 +136,10 @@
 
         </div>
 
-        <button class="np-submit" onclick="registrar()">Registrar Producto</button>
+        <button class="np-submit" id="npSubmitBtn" onclick="registrar()">Registrar Producto</button>
       </div>
 
-      <!-- DERECHA -->
+      <!-- PANEL DERECHO -->
       <div class="np-right">
 
         <div class="card np-qr-card">
@@ -132,6 +178,27 @@
     </div>
   </div>
 
+  <!-- OVERLAY DE ÉXITO -->
+  <div class="np-success-overlay" id="npSuccessOverlay">
+    <div class="np-success-card">
+      <div class="np-success-icon-wrap">
+        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <div class="np-success-heading">¡Producto Registrado!</div>
+      <div id="npSuccessSku" class="np-success-sku"></div>
+      <p class="np-success-sub">El producto <strong id="npSuccessName"></strong> ha sido agregado al inventario correctamente.</p>
+      <div class="np-success-actions">
+        <button class="np-success-btn-inv" onclick="irAlInventario()">
+          Ir al Inventario
+        </button>
+        <button class="np-success-btn-new" onclick="registrarOtro()">
+          + Nuevo Producto
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
   <script src="data.js"></script>
   <script src="nuevo-producto.js"></script>
 </body>

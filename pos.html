@@ -12,7 +12,6 @@
 </head>
 <body>
 
-  
   <nav>
     <div class="nav-left">
       <a href="index.html" class="logo">
@@ -21,12 +20,7 @@
         </div>
         <span class="logo-text">EcoLogistics</span>
       </a>
-      <ul class="nav-links">
-        <li><a href="index.html">Dashboard</a></li>
-        <li><a href="inventory.html">Inventario</a></li>
-        <li><a href="pos.html" class="active">Salidas POS</a></li>
-        <li><a href="reportes.html">Reportes</a></li>
-      </ul>
+      <ul class="nav-links"></ul>
     </div>
     <div class="nav-right">
       <button class="notif-btn">
@@ -40,47 +34,51 @@
           <div class="user-role">Warehouse Manager</div>
         </div>
       </div>
+      <button id="logoutBtn" title="Cerrar sesión" style="
+        width:36px;height:36px;border:1px solid var(--border);border-radius:8px;
+        background:var(--white);cursor:pointer;display:flex;align-items:center;
+        justify-content:center;transition:background .15s;color:var(--slate);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
     </div>
   </nav>
 
-  
   <div class="pos-wrapper">
 
-  
     <header class="pos-header">
       <div class="pos-header-left">
         <span class="pos-title">Salida de Materiales (POS)</span>
       </div>
       <div class="pos-scanner-status">
-        
-        Scanner Ready
+        <span class="pos-scanner-dot"></span>
+        Scanner Listo
       </div>
       <div class="pos-user">
-        <div class="pos-user-name">Admin User</div>
-        <div class="pos-user-station">Station 01</div>
+        <div class="pos-user-name" id="posUserName">Admin User</div>
+        <div class="pos-user-station">Estación 01</div>
       </div>
     </header>
 
-    
     <div class="pos-layout">
 
-      
       <div class="pos-left">
 
-        
         <div class="pos-scan-wrap">
           <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input
             class="pos-scan-input"
             id="scanInput"
             type="text"
-            placeholder="Scan or enter product code (SKU / QR)..."
+            placeholder="Escanear o ingresar código de producto (SKU / QR)..."
             autocomplete="off"
             onkeydown="handleScanKey(event)">
           <button class="pos-enter-btn" onclick="addFromInput()">ENTER</button>
         </div>
 
-        <!-- Items -->
         <div class="pos-items-card">
           <div class="pos-items-header">
             <span class="pos-items-title">Artículos Escaneados</span>
@@ -91,7 +89,6 @@
 
       </div>
 
-      
       <aside class="pos-sidebar">
         <div class="pos-sidebar-inner">
 
@@ -107,7 +104,6 @@
             <textarea class="pos-sidebar-textarea" id="notasInput" placeholder="Referencia de orden, responsable..."></textarea>
           </div>
 
-          
           <div class="pos-summary">
             <div class="pos-summary-row">
               <span class="pos-summary-label">Total de Items</span>
@@ -121,12 +117,10 @@
               <span class="pos-stock-label">Estado de Stock</span>
               <span class="pos-stock-badge pos-stock-ok" id="stockBadge">Suficiente</span>
             </div>
-
             <div class="pos-total-row">
               <span class="pos-total-label">Monto Total</span>
               <span class="pos-total-val" id="montoTotal">$0.00</span>
             </div>
-
             <button class="pos-confirm-btn" id="confirmBtn" onclick="confirmarSalida()" disabled>
               <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
               Confirmar Salida
@@ -140,7 +134,6 @@
     </div>
   </div>
 
-  
   <div class="pos-success-overlay" id="successOverlay">
     <div class="pos-success-card">
       <div class="pos-success-icon">
@@ -154,8 +147,19 @@
     </div>
   </div>
 
+  <script src="auth.js"></script>
   <script src="data.js"></script>
   <script src="nav.js"></script>
   <script src="pos.js"></script>
+  <script>
+    // Mostrar nombre del usuario en el header POS
+    (function () {
+      var session = EcoAuth.getSession();
+      if (session) {
+        var el = document.getElementById('posUserName');
+        if (el) el.textContent = session.nombre;
+      }
+    })();
+  </script>
 </body>
 </html>
