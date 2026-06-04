@@ -28,4 +28,5 @@ async function peticionAPI(tabla, metodo = 'GET', datos = null) {
     console.error(`Error de conexión en tabla ${tabla}:`, error);
     return null;
   }
+  
 }
