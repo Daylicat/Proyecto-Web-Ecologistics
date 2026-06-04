@@ -1,0 +1,51 @@
+CREATE DATABASE EcoLogistics;
+USE EcoLogistics;
+
+CREATE TABLE Rol (
+    idRol INT AUTO_INCREMENT PRIMARY KEY,
+    nombreRol VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE Categoria (
+    idCategoria INT AUTO_INCREMENT PRIMARY KEY,
+    nombreCategoria VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE Persona (
+    idPersona INT AUTO_INCREMENT PRIMARY KEY,
+    nombrePersona VARCHAR(50) NOT NULL,
+    apellidoPaterno VARCHAR(50) NOT NULL,
+    idRol INT NOT NULL,
+    FOREIGN KEY (idRol) REFERENCES Rol(idRol) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+CREATE TABLE Producto (
+    idProducto INT AUTO_INCREMENT PRIMARY KEY,
+    sku VARCHAR(50) UNIQUE NOT NULL,
+    nombreProducto VARCHAR(100) NOT NULL,
+    idCategoria INT NOT NULL,
+    stockActual INT NOT NULL DEFAULT 0,
+    stockMinimo INT NOT NULL DEFAULT 10,
+    descripcion TEXT,
+    qr VARCHAR(255) NULL,
+    FOREIGN KEY (idCategoria) REFERENCES Categoria(idCategoria) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+CREATE TABLE Salida (
+    idSalida INT AUTO_INCREMENT PRIMARY KEY,
+    fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+    proyecto VARCHAR(100) NOT NULL,
+    notas TEXT,
+    idPersona INT NOT NULL,
+    montoTotalEstimado DECIMAL(10,2),
+    FOREIGN KEY (idPersona) REFERENCES Persona(idPersona) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+CREATE TABLE DetalleSalida (
+    idDetalle INT AUTO_INCREMENT PRIMARY KEY,
+    idSalida INT NOT NULL,
+    idProducto INT NOT NULL,
+    cantidad INT NOT NULL CHECK (cantidad > 0),
+    FOREIGN KEY (idSalida) REFERENCES Salida(idSalida) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (idProducto) REFERENCES Producto(idProducto) ON DELETE RESTRICT ON UPDATE CASCADE
+);
