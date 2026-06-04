@@ -54,10 +54,13 @@ function invRowClass(s) {
   return '';
 }
 
-// ── Filtrado ─────────────────────────────────────────────────────
+// ── Filtrado ────────────────────────
+ 
+let PRODUCTOS_API = [];
 
 function invGetFiltered() {
-  var list = (typeof ECO_PRODUCTS !== 'undefined') ? ECO_PRODUCTS : [];
+  // Ahora filtramos sobre el arreglo que llenará Supabase
+  var list = PRODUCTOS_API;
   return list.filter(function(p) {
     var matchFilter = invActiveFilter === 'todos' || p.status === invActiveFilter;
     var q = invSearchQuery.toLowerCase();
@@ -177,11 +180,12 @@ function invFilterTable() {
 function invInitNotif() {
   var notifBtn = document.getElementById('notifBtn');
   var dot      = document.getElementById('notifDot');
-  if (!notifBtn || typeof ECO_PRODUCTS === 'undefined') return;
+  if (!notifBtn) return;
 
-  var critico   = ECO_PRODUCTS.filter(function(p) { return p.status === 'critico'; });
-  var bajoStock = ECO_PRODUCTS.filter(function(p) { return p.status === 'bajo stock'; });
-  var sinStock  = ECO_PRODUCTS.filter(function(p) { return p.status === 'sin stock'; });
+  
+  var critico   = PRODUCTOS_API.filter(function(p) { return p.status === 'critico'; });
+  var bajoStock = PRODUCTOS_API.filter(function(p) { return p.status === 'bajo stock'; });
+  var sinStock  = PRODUCTOS_API.filter(function(p) { return p.status === 'sin stock'; });; };
   var total     = critico.length + bajoStock.length + sinStock.length;
 
   if (dot && total > 0) {
@@ -235,7 +239,7 @@ function invInitNotif() {
     dd.classList.toggle('open');
   });
   document.addEventListener('click', function() { dd.classList.remove('open'); });
-}
+
 
 // ── Filtro desde URL: inventory.html?filter=critico ───────────────
 
@@ -255,7 +259,17 @@ function invApplyUrlFilter() {
   }
 }
 
-// ── Arranque ─────────────────────────────────────────────────────
+// ── Arranque Conectado a la API ──────────────────────────────────
 invApplyUrlFilter();
-invInitNotif();
-invRender();
+
+// Hacemos el fetch asíncrono a tu tabla de Supabase
+peticionAPI('Productos', 'GET').then(function(productosDelServidor) {
+  if (productosDelServidor) {
+    PRODUCTOS_API = productosDelServidor;
+  } else {
+    PRODUCTOS_API = [];
+  }
+  
+  invInitNotif();
+  invRender();
+});

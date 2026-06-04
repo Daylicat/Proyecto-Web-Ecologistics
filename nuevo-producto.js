@@ -110,7 +110,7 @@ function imprimirQR() {
   win.document.close();
 }
 
-// ─── Register product ────────────────────────────────────────────
+// ─── Registrar producto ────────────────────────────────────────────
 function registrar() {
   const name  = document.getElementById('prodName').value.trim();
   const sku   = document.getElementById('prodSku').value.trim();
@@ -131,15 +131,45 @@ function registrar() {
     return;
   }
 
-  // Success — redirect back to inventory
-  const btn = document.querySelector('.np-submit');
-  btn.textContent = '✓ Producto registrado';
-  btn.style.background = '#15803D';
-  btn.disabled = true;
+  // Calculamos el estado usando tus constantes de stock y mínimo
+  const numStock = parseInt(stock, 10) || 0;
+  const numMin = parseInt(min, 10) || 0;
+  let status = 'óptimo';
+  if (numStock === 0) status = 'sin stock';
+  else if (numStock <= numMin * 0.5) status = 'crítico';
+  else if (numStock <= numMin) status = 'bajo stock';
 
-  setTimeout(() => {
-    window.location.href = 'inventory.html';
-  }, 1200);
+  // Obtenemos el valor unitario que está en tu HTML por si lo necesitas guardar
+  const valorInput = document.getElementById('prodValor');
+  const valor = valorInput ? parseFloat(valorInput.value) || 0 : 0;
+
+  // Creamos el objeto con tus datos para mandarlo a la tabla de Supabase
+  const nuevoObjeto = {
+    id: sku,
+    name: name,
+    category: cat,
+    stock: numStock,
+    min: numMin,
+    status: status,
+    valor: valor
+  };
+
+  // Hacemos la petición a la API. Si sale bien, ejecuta tu bloque de éxito original.
+  peticionAPI('Productos', 'POST', nuevoObjeto).then(resultado => {
+    if (resultado) {
+      // Tu bloque de éxito visual original intacto
+      const btn = document.querySelector('.np-submit');
+      btn.textContent = '✓ Producto registrado';
+      btn.style.background = '#15803D';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        window.location.href = 'inventory.html';
+      }, 1200);
+    } else {
+      alert('Hubo un problema al registrar el producto en la base de datos.');
+    }
+  });
 }
 
 // ─── ESC to close ────────────────────────────────────────────────
