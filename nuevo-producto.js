@@ -110,7 +110,7 @@ function imprimirQR() {
   win.document.close();
 }
 
-// ─── Registrar producto ────────────────────────────────────────────
+// ─── Register product ────────────────────────────────────────────
 function registrar() {
   const name  = document.getElementById('prodName').value.trim();
   const sku   = document.getElementById('prodSku').value.trim();
@@ -131,33 +131,22 @@ function registrar() {
     return;
   }
 
-  // Calculamos el estado usando tus constantes de stock y mínimo
   const numStock = parseInt(stock, 10) || 0;
   const numMin = parseInt(min, 10) || 0;
-  let status = 'óptimo';
-  if (numStock === 0) status = 'sin stock';
-  else if (numStock <= numMin * 0.5) status = 'crítico';
-  else if (numStock <= numMin) status = 'bajo stock';
 
-  // Obtenemos el valor unitario que está en tu HTML por si lo necesitas guardar
-  const valorInput = document.getElementById('prodValor');
-  const valor = valorInput ? parseFloat(valorInput.value) || 0 : 0;
-
-  // Creamos el objeto con tus datos para mandarlo a la tabla de Supabase
+  // Creamos el objeto usando los nombres EXACTOS de tus columnas de la tabla SQL
   const nuevoObjeto = {
-    id: sku,
-    name: name,
-    category: cat,
-    stock: numStock,
-    min: numMin,
-    status: status,
-    valor: valor
+    sku: sku,
+    nombreProducto: name,
+    idCategoria: parseInt(cat, 10) || 1, // Tu base de datos espera el ID de la categoría (número)
+    stockActual: numStock,
+    stockMinimo: numMin,
+    descripcion: ''
   };
 
-  // Hacemos la petición a la API. Si sale bien, ejecuta tu bloque de éxito original.
-  peticionAPI('Productos', 'POST', nuevoObjeto).then(resultado => {
+  // Apuntamos a la tabla 'Producto' (en singular, como en tu SQL)
+  peticionAPI('Producto', 'POST', nuevoObjeto).then(resultado => {
     if (resultado) {
-      // Tu bloque de éxito visual original intacto
       const btn = document.querySelector('.np-submit');
       btn.textContent = '✓ Producto registrado';
       btn.style.background = '#15803D';
@@ -171,8 +160,3 @@ function registrar() {
     }
   });
 }
-
-// ─── ESC to close ────────────────────────────────────────────────
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') window.location.href = 'inventory.html';
-});

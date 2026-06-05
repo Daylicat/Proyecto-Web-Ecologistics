@@ -1,40 +1,116 @@
-// ─── reportes.js ─────────────────────────────────────────────────
-
 const AVATAR_COLORS = ['#667eea', '#2DBE6C', '#F59E0B', '#EF4444', '#3B82F6', '#8B5CF6'];
 
-const MOVEMENTS = [
-  { product: 'Panel Solar 400W',      sku: 'SL-400-X',  qty: 'x12',   dest: 'Instalación Residencial A', user: 'Carlos R.',  avatar: 'CR', color: 0, date: 'Oct 24, 2023 - 11:45', amount: 3600 },
-  { product: 'Inversor 5kW',          sku: 'INV-5K-02', qty: 'x2',    dest: 'Proyecto Industrial B',     user: 'Elena M.',   avatar: 'EM', color: 1, date: 'Oct 24, 2023 - 09:30', amount: 1850 },
-  { product: 'Cable de Cobre 2.5mm',  sku: 'COP-25-001',qty: 'x150m', dest: 'Mantenimiento General',     user: 'Admin User', avatar: 'AU', color: 5, date: 'Oct 23, 2023 - 16:15', amount: 450  },
-  { product: 'Batería Litio 100Ah',   sku: 'BAT-LI-100',qty: 'x4',    dest: 'Proyecto Solar SFe',        user: 'Carlos R.',  avatar: 'CR', color: 0, date: 'Oct 23, 2023 - 14:00', amount: 2200 },
-  { product: 'Interruptores Térmicos',sku: 'INT-TH-092',qty: 'x20',   dest: 'Hub Principal',             user: 'Luis T.',    avatar: 'LT', color: 3, date: 'Oct 22, 2023 - 10:30', amount: 340  },
-  { product: 'LED Panels 60x60',      sku: 'LED-PL-060',qty: 'x8',    dest: 'Oficina Central',           user: 'Elena M.',   avatar: 'EM', color: 1, date: 'Oct 22, 2023 - 08:45', amount: 960  },
-  { product: 'Circuit Breaker 20A',   sku: 'CIR-BR-20A',qty: 'x15',   dest: 'Site Alpha-4',              user: 'Marco V.',   avatar: 'MV', color: 4, date: 'Oct 21, 2023 - 17:10', amount: 525  },
-  { product: 'Paneles Solares 60W',   sku: 'SOL-PA-060',qty: 'x6',    dest: 'Instalación Rural B',       user: 'Admin User', avatar: 'AU', color: 5, date: 'Oct 21, 2023 - 15:00', amount: 720  },
-  { product: 'Torque Wrench Set',     sku: 'HER-TOR-01',qty: 'x3',    dest: 'Taller de Mantenimiento',   user: 'Luis T.',    avatar: 'LT', color: 3, date: 'Oct 20, 2023 - 11:20', amount: 210  },
-  { product: 'Cable UTP Cat5e x100m', sku: 'CAB-UTP-5E',qty: 'x2',    dest: 'Proyecto Industrial B',     user: 'Marco V.',   avatar: 'MV', color: 4, date: 'Oct 20, 2023 - 09:00', amount: 180  },
-];
-
-const KPI_DATA = {
-  salidas:   { salidas: { val: '1,284', trend: '+12%', up: true }, items: { val: '8,420', trend: '+5%', up: true }, valor: { val: '$42,150.00', trend: '-2.4%', up: false }, usuarios: { val: '14', note: 'Personal de Almacén' } },
-  entradas:  { salidas: { val: '320',   trend: '+8%',  up: true }, items: { val: '4,210', trend: '+11%',up: true }, valor: { val: '$98,700.00', trend: '+18%', up: true  }, usuarios: { val: '8',  note: 'Personal de Almacén' } },
-  auditoria: { salidas: { val: '1,604', trend: '+9%',  up: true }, items: { val: '12,630',trend: '+7%', up: true }, valor: { val: '$140,850.00',trend: '+6%', up: true  }, usuarios: { val: '14', note: 'Personal de Almacén' } },
-  usuarios:  { salidas: { val: '14',    trend: '+2%',  up: true }, items: { val: '8,420', trend: '+5%', up: true }, valor: { val: '$42,150.00', trend: '-2.4%',up: false }, usuarios: { val: '6',  note: 'Activos este mes'   } },
-};
-
+let MOVEMENTS = [];
 let visibleRows = 3;
 let activeFilter = null;
 
-// ─── KPI Render ──────────────────────────────────────────────────
+let KPI_DATA = {
+  salidas:   { salidas: { val: '0' }, items: { val: '0' }, valor: { val: '$0.00' }, usuarios: { val: '1', note: 'Personal de Almacén' } },
+  entradas:  { salidas: { val: '0' }, items: { val: '0' }, valor: { val: '$0.00' }, usuarios: { val: '1', note: 'Personal de Almacén' } },
+  auditoria: { salidas: { val: '0' }, items: { val: '0' }, valor: { val: '$0.00' }, usuarios: { val: '1', note: 'Personal de Almacén' } },
+  usuarios:  { salidas: { val: '1' }, items: { val: '0' }, valor: { val: '$0.00' }, usuarios: { val: '1', note: 'Activos este mes' } },
+};
+
+function cargarDatosDesdeSupabase() {
+  peticionAPI('Producto', 'GET').then(productos => {
+    if (!productos || productos.length === 0) {
+      MOVEMENTS = [];
+      calcularKPIs(0, 0);
+      renderKPIs();
+      renderTable();
+      return;
+    }
+
+    peticionAPI('DetalleSalida', 'GET').then(detalles => {
+      const historial = detalles || [];
+      
+      if (historial.length === 0) {
+        let totalStockGlobal = 0;
+        let valorTotalInventario = 0;
+
+        MOVEMENTS = productos.map((p, idx) => {
+          const stock = p.stockActual || 0;
+          const valorUnitario = p.valor || 25.00; 
+          const montoEstimado = stock * valorUnitario;
+
+          totalStockGlobal += stock;
+          valorTotalInventario += montoEstimado;
+
+          return {
+            product: p.nombreProducto || 'Producto sin nombre',
+            sku: p.sku || 'S/N',
+            qty: `x${stock}`,
+            dest: 'Inventario Base (Auditoría)',
+            user: 'Alejandro T.',
+            avatar: 'AT',
+            color: idx % AVATAR_COLORS.length,
+            date: new Date().toLocaleDateString('es-MX', { month: 'short', day: 'numeric', year: 'numeric' }),
+            amount: montoEstimado
+          };
+        });
+
+        calcularKPIs(totalStockGlobal, valorTotalInventario);
+      } else {
+        let totalItemsMovidos = 0;
+        let valorTotalMovimientos = 0;
+
+        MOVEMENTS = historial.map((d, idx) => {
+          const prodRelacionado = productos.find(p => p.idProducto === d.idProducto) || {};
+          const cantidad = d.cantidad || 0;
+          const precio = prodRelacionado.valor || 0;
+          const subtotal = cantidad * precio;
+
+          totalItemsMovidos += cantidad;
+          valorTotalMovimientos += subtotal;
+
+          return {
+            product: prodRelacionado.nombreProducto || 'Producto Eliminado',
+            sku: prodRelacionado.sku || 'S/N',
+            qty: `x${cantidad}`,
+            dest: 'Despacho POS',
+            user: 'Alejandro T.',
+            avatar: 'AT',
+            color: idx % AVATAR_COLORS.length,
+            date: new Date().toLocaleDateString('es-MX', { month: 'short', day: 'numeric', year: 'numeric' }),
+            amount: subtotal
+          };
+        });
+
+        KPI_DATA.salidas.salidas.val = String(historial.length);
+        KPI_DATA.salidas.items.val = String(totalItemsMovidos);
+        KPI_DATA.salidas.valor.val = `$${valorTotalMovimientos.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+        
+        KPI_DATA.auditoria = { ...KPI_DATA.salidas };
+      }
+
+      renderKPIs();
+      renderTable();
+    });
+  });
+}
+
+function calcularKPIs(totalStock, valorInventario) {
+  const formateado = `$${valorInventario.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+  
+  KPI_DATA.auditoria.salidas.val = String(MOVEMENTS.length);
+  KPI_DATA.auditoria.items.val = String(totalStock);
+  KPI_DATA.auditoria.valor.val = formateado;
+
+  KPI_DATA.salidas = { ...KPI_DATA.auditoria };
+  KPI_DATA.entradas = { ...KPI_DATA.auditoria };
+  KPI_DATA.usuarios.items.val = String(totalStock);
+  KPI_DATA.usuarios.valor.val = formateado;
+}
+
 function renderKPIs() {
   const type = document.getElementById('reportType').value;
-  const d    = KPI_DATA[type] || KPI_DATA.salidas;
+  const d = KPI_DATA[type] || KPI_DATA.salidas;
 
   const kpis = [
-    { label: 'Total Salidas',    val: d.salidas.val,  trend: d.salidas.trend,  up: d.salidas.up  },
-    { label: 'Items Movidos',    val: d.items.val,    trend: d.items.trend,    up: d.items.up    },
-    { label: 'Valor de Salidas', val: d.valor.val,    trend: d.valor.trend,    up: d.valor.up    },
-    { label: 'Usuarios Activos', val: d.usuarios.val, note: d.usuarios.note                      },
+    { label: 'Total Salidas',    val: d.salidas.val,   trend: d.salidas.trend,  up: d.salidas.up  },
+    { label: 'Items Movidos',    val: d.items.val,     trend: d.items.trend,    up: d.items.up    },
+    { label: 'Valor de Salidas', val: d.valor.val,     trend: d.valor.trend,    up: d.valor.up    },
+    { label: 'Usuarios Activos', val: d.usuarios.val, note: d.usuarios.note },
   ];
 
   document.getElementById('kpiGrid').innerHTML = kpis.map((k, i) => `
@@ -55,7 +131,6 @@ function renderKPIs() {
   `).join('');
 }
 
-// ─── Table Render ────────────────────────────────────────────────
 function renderTable() {
   let data = [...MOVEMENTS];
   if (activeFilter === 'alto') data = data.filter(r => r.amount >= 1000);
@@ -86,24 +161,18 @@ function renderTable() {
   btn.style.display = visibleRows >= data.length ? 'none' : 'block';
 }
 
-// ─── Controls ────────────────────────────────────────────────────
 function applyFilters() { visibleRows = 3; renderKPIs(); renderTable(); }
-
-function loadMore(e) {
-  e.preventDefault();
-  visibleRows += 3;
-  renderTable();
-}
+// Corregido error sintáctico previo del botón ver más
+function loadMore(e) { e.preventDefault(); visibleRows += 3; renderTable(); }
 
 const FILTERS = [null, 'alto', 'bajo'];
 let filterIdx = 0;
 
 function cycleFilter() {
-  filterIdx   = (filterIdx + 1) % FILTERS.length;
+  filterIdx = (filterIdx + 1) % FILTERS.length;
   activeFilter = FILTERS[filterIdx];
-  visibleRows  = 3;
+  visibleRows = 3;
   renderTable();
-
   const btn = document.querySelector('.rep-icon-btn');
   btn.style.background = activeFilter ? 'var(--green-light)' : '';
   btn.querySelector('svg').style.stroke = activeFilter ? 'var(--green)' : '';
@@ -116,12 +185,10 @@ function refresh() {
   setTimeout(() => {
     btn.style.opacity = '';
     btn.style.pointerEvents = '';
-    renderKPIs();
-    renderTable();
+    cargarDatosDesdeSupabase();
   }, 600);
 }
 
-// ─── Date range picker (simple toggle) ───────────────────────────
 const DATE_RANGES = [
   'Oct 01, 2023 - Oct 31, 2023',
   'Sep 01, 2023 - Sep 30, 2023',
@@ -136,29 +203,206 @@ function toggleDateMenu() {
   applyFilters();
 }
 
-// ─── Export PDF ──────────────────────────────────────────────────
-function exportarPDF() {
-  const btn = document.querySelector('.rep-export-btn');
-  const orig = btn.innerHTML;
-  btn.innerHTML = `<svg viewBox="0 0 24 24" style="animation:spin .7s linear infinite"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg> Generando...`;
-  btn.disabled = true;
-
-  setTimeout(() => {
-    btn.innerHTML = orig;
-    btn.disabled  = false;
-    window.print();
-  }, 1200);
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
 }
 
-// ─── Init ────────────────────────────────────────────────────────
+function exportarPDF() {
+  const btn = document.querySelector('.rep-export-btn');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" style="animation:spin .7s linear infinite"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg> Generando PDF...`;
+  btn.disabled = true;
+
+  let allData = [...MOVEMENTS];
+  if (activeFilter === 'alto') allData = allData.filter(r => r.amount >= 1000);
+  if (activeFilter === 'bajo') allData = allData.filter(r => r.amount < 500);
+
+  const reportType = document.getElementById('reportType').value;
+  const typeName = {
+    'salidas': 'Salidas de Almacén',
+    'entradas': 'Entradas de Stock',
+    'auditoria': 'Auditoría Completa',
+    'usuarios': 'Por Usuario'
+  }[reportType] || 'Reporte';
+  
+  const dateLabel = document.getElementById('dateLabel').textContent;
+  const kpiData = KPI_DATA[reportType] || KPI_DATA.salidas;
+  const totalAmount = allData.reduce((sum, r) => sum + r.amount, 0);
+
+  const pdfContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Reporte EcoLogistics - ${typeName}</title>
+      <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+          font-family: 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+          padding: 20px 25px;
+          color: #0F172A;
+          background: white;
+          font-size: 12px;
+        }
+        .report-header {
+          margin-bottom: 25px;
+          border-bottom: 2px solid #2DBE6C;
+          padding-bottom: 12px;
+        }
+        .report-title { font-size: 22px; font-weight: 700; color: #0F172A; margin-bottom: 4px; }
+        .report-sub { font-size: 12px; color: #64748B; margin-top: 3px; }
+        .report-date { font-size: 11px; color: #94A3B8; margin-top: 3px; }
+        
+        .kpi-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 12px;
+          margin-bottom: 25px;
+        }
+        .kpi-card {
+          border: 1px solid #E2E8F0;
+          border-radius: 10px;
+          padding: 14px 16px;
+          background: #FFFFFF;
+        }
+        .kpi-label { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #64748B; margin-bottom: 6px; }
+        .kpi-value { font-size: 24px; font-weight: 700; font-family: monospace; color: #0F172A; }
+        .kpi-note { font-size: 10px; color: #64748B; margin-top: 4px; }
+        
+        .section-title { font-size: 13px; font-weight: 700; margin: 18px 0 12px 0; }
+        
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          table-layout: fixed;
+        }
+        th {
+          text-align: left;
+          font-size: 9px;
+          font-weight: 700;
+          text-transform: uppercase;
+          color: #64748B;
+          padding: 8px 10px;
+          border-bottom: 1px solid #E2E8F0;
+          background: #F8FAFC;
+        }
+        td {
+          padding: 10px 10px;
+          border-bottom: 1px solid #E2E8F0;
+          font-size: 11px;
+          vertical-align: middle;
+          word-wrap: break-word;
+        }
+        th:nth-child(1), td:nth-child(1) { width: 22%; }
+        th:nth-child(2), td:nth-child(2) { width: 10%; }
+        th:nth-child(3), td:nth-child(3) { width: 20%; }
+        th:nth-child(4), td:nth-child(4) { width: 12%; }
+        th:nth-child(5), td:nth-child(5) { width: 20%; }
+        th:nth-child(6), td:nth-child(6) { width: 16%; text-align: right; }
+        
+        .prod-name { font-size: 12px; font-weight: 700; color: #0F172A; }
+        .prod-sku { font-size: 9px; color: #64748B; font-family: monospace; margin-top: 2px; }
+        .rep-qty { font-size: 12px; font-weight: 700; font-family: monospace; }
+        .rep-dest { font-size: 11px; color: #64748B; }
+        .rep-user-name { font-size: 11px; color: #64748B; }
+        .rep-date { font-size: 10px; color: #64748B; font-family: monospace; }
+        .rep-amount { font-size: 12px; font-weight: 700; font-family: monospace; text-align: right; }
+        
+        .total-row { background: #F8FAFC; }
+        .total-row td { border-top: 2px solid #E2E8F0; padding: 10px 10px; }
+        .total-label { text-align: right; font-size: 12px; font-weight: 700; }
+        .total-amount { font-size: 13px; font-weight: 700; color: #2DBE6C; font-family: monospace; text-align: right; }
+        
+        .footer { margin-top: 25px; font-size: 9px; color: #94A3B8; text-align: center; border-top: 1px solid #E2E8F0; padding-top: 12px; }
+      </style>
+    </head>
+    <body>
+      <div class="report-header">
+        <div class="report-title">EcoLogistics — ${typeName}</div>
+        <div class="report-sub">Historial detallado de movimientos y auditoría de stock</div>
+        <div class="report-date">Período: ${dateLabel} | Generado: ${new Date().toLocaleString()}</div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Total Salidas</div><div class="kpi-value">${kpiData.salidas.val}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Ítems Movidos</div><div class="kpi-value">${kpiData.items.val}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Valor de Salidas</div><div class="kpi-value">${kpiData.valor.val}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Usuarios Activos</div><div class="kpi-value">${kpiData.usuarios.val}</div><div class="kpi-note">${kpiData.usuarios.note || ''}</div></div>
+      </div>
+
+      <div class="section-title"> Detalle de Movimientos (${allData.length} registros)</div>
+      <table>
+        <thead>
+          <tr><th>Producto</th><th>Cantidad</th><th>Destino / Proyecto</th><th>Usuario</th><th>Fecha y Hora</th><th style="text-align:right">Monto Estimado</th></tr>
+        </thead>
+        <tbody>
+          ${allData.map(r => `
+            <tr>
+              <td><div class="prod-name">${escapeHtml(r.product)}</div><div class="prod-sku">SKU: ${escapeHtml(r.sku)}</div></td>
+              <td><span class="rep-qty">${escapeHtml(r.qty)}</span></td>
+              <td><span class="rep-dest">${escapeHtml(r.dest)}</span></td>
+              <td><span class="rep-user-name">${escapeHtml(r.user)}</span></td>
+              <td><span class="rep-date">${escapeHtml(r.date)}</span></td>
+              <td class="rep-amount">$${r.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+        <tfoot>
+          <tr class="total-row"><td colspan="5" class="total-label">TOTAL GENERAL:</td><td class="total-amount">$${totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td></tr>
+        </tfoot>
+      </table>
+      <div class="footer">Reporte generado automáticamente por EcoLogistics — Sistema de Gestión de Inventario<br>Documento válido como constancia de movimientos de almacén</div>
+    </body>
+    </html>
+  `;
+
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'absolute';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = 'none';
+  document.body.appendChild(iframe);
+
+  iframe.contentWindow.document.open();
+  iframe.contentWindow.document.write(pdfContent);
+  iframe.contentWindow.document.close();
+
+  const opt = {
+    margin: [0.4, 0.4, 0.4, 0.4],
+    filename: `reporte_${reportType}_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: false, letterRendering: true, logging: false },
+    jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+  };
+
+  html2pdf().set(opt).from(iframe.contentWindow.document.body).save()
+    .then(() => {
+      document.body.removeChild(iframe);
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    })
+    .catch(err => {
+      console.error('Error al generar PDF:', err);
+      document.body.removeChild(iframe);
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+      alert('Hubo un error al generar el PDF. Intenta nuevamente.');
+    });
+}
+
 const style = document.createElement('style');
 style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
 document.head.appendChild(style);
 
-renderKPIs();
-renderTable();
-
-// Update nav links across all pages when Reportes is active
 document.querySelectorAll('.nav-links a').forEach(a => {
   if (a.href.includes('reportes')) a.classList.add('active');
 });
+
+// Inicialización del flujo asíncrono hacia Supabase al cargar la pantalla
+cargarDatosDesdeSupabase();

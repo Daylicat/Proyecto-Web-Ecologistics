@@ -54,20 +54,22 @@ function invRowClass(s) {
   return '';
 }
 
-// ── Filtrado ────────────────────────
- 
+// ── Filtrado ─────────────────────────────────────────────────────
 let PRODUCTOS_API = [];
 
 function invGetFiltered() {
-  // Ahora filtramos sobre el arreglo que llenará Supabase
   var list = PRODUCTOS_API;
   return list.filter(function(p) {
     var matchFilter = invActiveFilter === 'todos' || p.status === invActiveFilter;
     var q = invSearchQuery.toLowerCase();
+    
+    // Mapeamos a las columnas reales en español de tu base de datos para la búsqueda
+    var nameStr = p.nombreProducto ? p.nombreProducto.toLowerCase() : '';
+    var skuStr  = p.sku ? p.sku.toLowerCase() : '';
+    
     var matchSearch = !q
-      || p.name.toLowerCase().indexOf(q) > -1
-      || p.id.toLowerCase().indexOf(q) > -1
-      || p.category.toLowerCase().indexOf(q) > -1;
+      || nameStr.indexOf(q) > -1
+      || skuStr.indexOf(q) > -1;
     return matchFilter && matchSearch;
   });
 }
@@ -95,21 +97,37 @@ function invRender() {
   } else {
     for (var i = 0; i < slice.length; i++) {
       var p    = slice[i];
-      var icon = INV_ICONS[p.icon] || INV_ICONS.tool;
-      html += '<tr class="' + invRowClass(p.status) + '">';
+      
+      // Mapeamos tus columnas reales de Supabase a variables limpias para tu HTML
+      var pName  = p.nombreProducto || '';
+      var pId    = p.sku || '';
+      var pStock = p.stockActual || 0;
+      var pMin   = p.stockMinimo || 0;
+      var pStatus = p.status || 'óptimo';
+      var pIcon  = p.icon || 'tool';
+
+      // Conversión visual rápida para el texto de la categoría según el ID numérico
+      var pCat = 'Electrical';
+      if (p.idCategoria === 2) pCat = 'Storage';
+      else if (p.idCategoria === 3) pCat = 'Panels';
+      else if (p.idCategoria === 4) pCat = 'Cables';
+      else if (p.idCategoria === 5) pCat = 'Tools';
+
+      var icon = INV_ICONS[pIcon] || INV_ICONS.tool;
+      html += '<tr class="' + invRowClass(pStatus) + '">';
       html +=   '<td>';
       html +=     '<div class="prod-cell">';
       html +=       '<div class="prod-icon">' + icon + '</div>';
       html +=       '<div>';
-      html +=         '<div class="prod-name">' + p.name + '</div>';
-      html +=         '<div class="prod-id">ID: #' + p.id + '</div>';
+      html +=         '<div class="prod-name">' + pName + '</div>';
+      html +=         '<div class="prod-id">ID: #' + pId + '</div>';
       html +=       '</div>';
       html +=     '</div>';
       html +=   '</td>';
-      html +=   '<td style="font-size:13px;color:var(--slate)">' + p.category + '</td>';
-      html +=   '<td><span class="' + invStockClass(p.status) + '">' + p.stock + ' unid.</span></td>';
-      html +=   '<td><span class="stock-min">' + p.min + ' unid.</span></td>';
-      html +=   '<td><span class="status-badge ' + invStatusClass(p.status) + '">' + invStatusLabel(p.status) + '</span></td>';
+      html +=   '<td style="font-size:13px;color:var(--slate)">' + pCat + '</td>';
+      html +=   '<td><span class="' + invStockClass(pStatus) + '">' + pStock + ' unid.</span></td>';
+      html +=   '<td><span class="stock-min">' + pMin + ' unid.</span></td>';
+      html +=   '<td><span class="status-badge ' + invStatusClass(pStatus) + '">' + invStatusLabel(pStatus) + '</span></td>';
       html +=   '<td><div class="qr-icon" title="Ver QR">' + INV_QR + '</div></td>';
       html +=   '<td>';
       html +=     '<div class="action-btns">';
@@ -169,6 +187,7 @@ function invSetFilter(filter, btn) {
   invRender();
 }
 
+// Corregido para que busque usando el campo correcto del buscador superior
 function invFilterTable() {
   invSearchQuery = document.getElementById('searchInput').value;
   invCurrentPage = 1;
@@ -182,10 +201,9 @@ function invInitNotif() {
   var dot      = document.getElementById('notifDot');
   if (!notifBtn) return;
 
-  
   var critico   = PRODUCTOS_API.filter(function(p) { return p.status === 'critico'; });
   var bajoStock = PRODUCTOS_API.filter(function(p) { return p.status === 'bajo stock'; });
-  var sinStock  = PRODUCTOS_API.filter(function(p) { return p.status === 'sin stock'; });; };
+  var sinStock  = PRODUCTOS_API.filter(function(p) { return p.status === 'sin stock'; });
   var total     = critico.length + bajoStock.length + sinStock.length;
 
   if (dot && total > 0) {
@@ -198,11 +216,17 @@ function invInitNotif() {
   function makeItem(p, type) {
     var iconMap  = { critico: '⚠', 'bajo stock': 'ℹ', 'sin stock': '✕' };
     var classMap = { critico: 'critico', 'bajo stock': 'bajo', 'sin stock': 'sinstock' };
+    
+    // Mapeo de campos en español para la visualización de la alerta
+    var nameStr  = p.nombreProducto || '';
+    var stockNum = p.stockActual || 0;
+    var minNum   = p.stockMinimo || 0;
+
     return '<div class="notif-item notif-item-' + classMap[type] + '">'
       + '<span class="notif-item-icon">' + iconMap[type] + '</span>'
       + '<div class="notif-item-body">'
-      + '<div class="notif-item-name">' + p.name + '</div>'
-      + '<div class="notif-item-detail">' + p.stock + ' unidades &middot; M&iacute;n. ' + p.min + '</div>'
+      + '<div class="notif-item-name">' + nameStr + '</div>'
+      + '<div class="notif-item-detail">' + stockNum + ' unidades &middot; M&iacute;n. ' + minNum + '</div>'
       + '</div>'
       + '<a href="inventory.html?filter=' + encodeURIComponent(type) + '" class="notif-item-ver">Ver</a>'
       + '</div>';
@@ -228,6 +252,10 @@ function invInitNotif() {
 
   html += '</div><a href="inventory.html" class="notif-footer">Ver inventario completo &rarr;</a>';
 
+  // Eliminamos cualquier dropdown duplicado previo si es que existía
+  var oldDd = document.getElementById('notifDropdown');
+  if (oldDd) oldDd.remove();
+
   var dd = document.createElement('div');
   dd.id        = 'notifDropdown';
   dd.className = 'notif-dropdown';
@@ -239,7 +267,7 @@ function invInitNotif() {
     dd.classList.toggle('open');
   });
   document.addEventListener('click', function() { dd.classList.remove('open'); });
-
+}
 
 // ── Filtro desde URL: inventory.html?filter=critico ───────────────
 
@@ -262,8 +290,8 @@ function invApplyUrlFilter() {
 // ── Arranque Conectado a la API ──────────────────────────────────
 invApplyUrlFilter();
 
-// Hacemos el fetch asíncrono a tu tabla de Supabase
-peticionAPI('Productos', 'GET').then(function(productosDelServidor) {
+// Apuntamos a la tabla 'Producto' (en singular, como en tu SQL de Supabase)
+peticionAPI('Producto', 'GET').then(function(productosDelServidor) {
   if (productosDelServidor) {
     PRODUCTOS_API = productosDelServidor;
   } else {

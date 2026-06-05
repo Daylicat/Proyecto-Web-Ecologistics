@@ -25,7 +25,6 @@
   <div class="np-main">
     <div class="np-grid">
 
-      <!-- FORMULARIO -->
       <div class="card np-form-card">
         <h1 class="np-title">Alta de Producto</h1>
         <p class="np-subtitle">Ingrese los detalles para registrar un nuevo material.</p>
@@ -42,12 +41,12 @@
               <label class="np-label">Categoría</label>
               <select class="np-select" id="prodCategory" onchange="onFieldChange()">
                 <option value="">Seleccionar...</option>
-                <option value="Electrical">Electrical</option>
-                <option value="Solar">Solar</option>
-                <option value="Storage">Storage</option>
-                <option value="Panels">Panels</option>
-                <option value="Cables">Cables</option>
-                <option value="Tools">Tools</option>
+                <option value="1">Electrical</option>
+                <option value="2">Solar</option>
+                <option value="3">Storage</option>
+                <option value="4">Panels</option>
+                <option value="5">Cables</option>
+                <option value="6">Tools</option>
               </select>
             </div>
             <div class="np-group">
@@ -93,7 +92,6 @@
         <button class="np-submit" onclick="registrar()">Registrar Producto</button>
       </div>
 
-      <!-- DERECHA -->
       <div class="np-right">
 
         <div class="card np-qr-card">
@@ -132,7 +130,6 @@
     </div>
   </div>
 
-  
   <script src="data.js"></script>
   <script src="api-config.js"></script>
   <script src="nuevo-producto.js"></script>
