@@ -6,9 +6,116 @@
   <title>EcoLogistics — Reportes</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    /* ── Filtros bar ─────────────────────────────────────────────────────── */
+    .rep-filters-bar {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      flex-wrap: wrap;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--card-shadow);
+    }
+
+    .rep-filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .rep-filter-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      color: var(--slate-light);
+      text-transform: uppercase;
+    }
+
+    .rep-filter-input, .rep-filter-select {
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 7px 11px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color .15s;
+      height: 34px;
+    }
+
+    .rep-filter-input:focus,
+    .rep-filter-select:focus { border-color: var(--green); background: var(--white); }
+
+    .rep-filter-actions {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .rep-filter-btn {
+      height: 34px;
+      padding: 0 14px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--slate);
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+      white-space: nowrap;
+    }
+
+    .rep-filter-btn:hover { background: var(--bg); border-color: var(--slate-light); }
+
+    .rep-filter-btn-apply {
+      background: var(--green);
+      color: #fff;
+      border-color: var(--green);
+    }
+
+    .rep-filter-btn-apply:hover { background: var(--green-dark); border-color: var(--green-dark); }
+
+    /* ── KPI grid responsive ─────────────────────────────────────────────── */
+    .rep-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    /* ── Tabla responsive ────────────────────────────────────────────────── */
+    .rep-table-card { overflow-x: auto; }
+
+    @media (max-width: 1024px) {
+      .rep-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 768px) {
+      main { padding: 16px; }
+      .rep-header { flex-direction: column; gap: 16px; }
+      .rep-header-controls { width: 100%; justify-content: flex-start; }
+      .rep-kpi-grid { grid-template-columns: 1fr 1fr; }
+      .rep-filters-bar { padding: 12px 14px; }
+      .rep-filter-group { width: 100%; }
+      .rep-filter-input, .rep-filter-select { width: 100%; }
+    }
+
+    @media (max-width: 480px) {
+      .rep-kpi-grid { grid-template-columns: 1fr; }
+      .rep-header-controls { flex-direction: column; align-items: stretch; }
+    }
+  </style>
 </head>
 <body>
-
   <nav>
     <div class="nav-left">
       <a href="index.html" class="logo">
@@ -24,13 +131,11 @@
         <div class="user-avatar">AU</div>
         <div class="user-meta">
           <div class="user-name">Admin User</div>
-          <div class="user-role">Gerente de Almacén</div>
+          <div class="user-role">Gerente</div>
         </div>
       </div>
-      <button id="logoutBtn" title="Cerrar sesión" style="
-        width:36px;height:36px;border:1px solid var(--border);border-radius:8px;
-        background:var(--white);cursor:pointer;display:flex;align-items:center;
-        justify-content:center;transition:background .15s;color:var(--slate);">
+      <button id="logoutBtn" title="Cerrar sesión"
+              style="width:36px;height:36px;border:1px solid var(--border);border-radius:8px;background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate);">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
           <polyline points="16 17 21 12 16 7"/>
@@ -41,72 +146,117 @@
   </nav>
 
   <main>
-
+    <!-- Header con controles -->
     <div class="rep-header">
       <div class="rep-header-left">
         <h1 class="rep-header-title">Reportes y Análisis</h1>
-        <p class="rep-header-subtitle">Historial detallado de movimientos y auditoría de stock.</p>
+        <p class="rep-header-subtitle">Información operativa en tiempo real — inventario, movimientos y salidas.</p>
       </div>
       <div class="rep-header-controls">
         <div class="rep-control-group">
-          <span class="rep-control-label">Rango de Fecha</span>
-          <button class="rep-date-btn" id="dateBtn" onclick="toggleDateMenu()">
-            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <span id="dateLabel">Oct 01, 2023 - Oct 31, 2023</span>
-            <svg class="rep-date-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-        </div>
-        <div class="rep-control-group">
           <span class="rep-control-label">Tipo de Reporte</span>
-          <select class="rep-type-select" id="reportType" onchange="applyFilters()">
+          <select class="rep-type-select" id="reportType" onchange="cambiarTipoReporte()">
+            <option value="inventario">Inventario Actual</option>
             <option value="salidas">Salidas de Almacén</option>
-            <option value="entradas">Entradas de Stock</option>
-            <option value="auditoria">Auditoría Completa</option>
-            <option value="usuarios">Por Usuario</option>
+            <option value="entradas">Entradas a Inventario</option>
+            <option value="criticos">Productos Críticos</option>
+            <option value="sin_stock">Productos Sin Stock</option>
+            <option value="movimientos">Historial de Movimientos</option>
           </select>
         </div>
-        <div class="rep-control-group" style="justify-content:flex-end">
-          <span class="rep-control-label">&nbsp;</span>
-          <button class="rep-export-btn" onclick="exportarPDF()">
+        <div class="rep-control-group" style="justify-content:flex-end;gap:8px;flex-direction:row;align-items:flex-end">
+          <button class="rep-export-btn" onclick="exportarPDF()" style="background:var(--text)">
             <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Exportar PDF
+            PDF
+          </button>
+          <button class="rep-export-btn" onclick="exportarExcel()" style="background:#15803D">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            Excel
           </button>
         </div>
       </div>
     </div>
 
+    <!-- Barra de filtros -->
+    <div class="rep-filters-bar">
+      <!-- Fechas rápidas -->
+      <div class="rep-filter-group">
+        <span class="rep-filter-label">Período rápido</span>
+        <div style="display:flex;gap:6px">
+          <button class="rep-filter-btn" onclick="setFechaRapida('hoy')">Hoy</button>
+          <button class="rep-filter-btn" onclick="setFechaRapida('7d')">7 días</button>
+          <button class="rep-filter-btn" onclick="setFechaRapida('30d')">30 días</button>
+        </div>
+      </div>
+
+      <!-- Fecha desde -->
+      <div class="rep-filter-group">
+        <span class="rep-filter-label">Desde</span>
+        <input class="rep-filter-input" id="filterFechaDesde" type="date">
+      </div>
+
+      <!-- Fecha hasta -->
+      <div class="rep-filter-group">
+        <span class="rep-filter-label">Hasta</span>
+        <input class="rep-filter-input" id="filterFechaHasta" type="date">
+      </div>
+
+      <!-- Categoría -->
+      <div class="rep-filter-group">
+        <span class="rep-filter-label">Categoría</span>
+        <select class="rep-filter-select" id="filterCategoria">
+          <option value="">Todas</option>
+        </select>
+      </div>
+
+      <!-- Estado -->
+      <div class="rep-filter-group">
+        <span class="rep-filter-label">Estado</span>
+        <select class="rep-filter-select" id="filterEstado">
+          <option value="">Todos</option>
+          <option value="optimo">Óptimo</option>
+          <option value="bajo stock">Bajo Stock</option>
+          <option value="critico">Crítico</option>
+          <option value="sin stock">Sin Stock</option>
+        </select>
+      </div>
+
+      <!-- Acciones -->
+      <div class="rep-filter-actions">
+        <button class="rep-filter-btn rep-filter-btn-apply" onclick="aplicarFiltros()">Aplicar</button>
+        <button class="rep-filter-btn" onclick="limpiarFiltros()">Limpiar</button>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
     <div class="rep-kpi-grid" id="kpiGrid"></div>
 
+    <!-- Tabla de reporte -->
     <div class="card rep-table-card">
       <div class="rep-table-header">
-        <span class="rep-table-title">Detalle de Movimientos</span>
+        <span class="rep-table-title" id="repTableTitle">Cargando...</span>
         <div class="rep-table-actions">
-          <button class="rep-icon-btn" title="Filtrar" onclick="cycleFilter()">
-            <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-          </button>
           <button class="rep-icon-btn" title="Actualizar" onclick="refresh()">
-            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            <svg viewBox="0 0 24 24">
+              <polyline points="23 4 23 10 17 10"/>
+              <polyline points="1 20 1 14 7 14"/>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
           </button>
         </div>
       </div>
-      <table class="rep-table">
-        <thead>
-          <tr>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Destino / Proyecto</th>
-            <th>Usuario</th>
-            <th>Fecha y Hora</th>
-            <th style="text-align:right">Monto Estimado</th>
-          </tr>
-        </thead>
-        <tbody id="movTable"></tbody>
-      </table>
-      <a href="#" class="rep-view-more" id="viewMoreBtn" onclick="loadMore(event)">Ver más movimientos</a>
+      <div id="repTableContainer">
+        <div style="text-align:center;padding:40px;color:var(--slate-light)">Cargando datos...</div>
+      </div>
+      <a href="#" class="rep-view-more" id="viewMoreBtn" onclick="loadMore(event)" style="display:none">
+        Ver más registros
+      </a>
     </div>
-
   </main>
 
+  <!-- Supabase SDK — OBLIGATORIO antes que los scripts propios -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="api-config.js"></script>
   <script src="auth.js"></script>
   <script src="data.js"></script>
   <script src="nav.js"></script>

@@ -7,11 +7,89 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <style>
-    html, body { height: 100%; overflow: hidden; display: flex; flex-direction: column; }
+    /* ── Base layout — solo escritorio mantiene overflow:hidden ─────────── */
+    html, body {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (min-width: 769px) {
+      html, body { overflow: hidden; }
+    }
+
+    @media (max-width: 768px) {
+      html, body { overflow: auto; height: auto; }
+
+      /* En mobile el layout es vertical */
+      .pos-layout {
+        flex-direction: column !important;
+        overflow: visible !important;
+      }
+
+      .pos-left {
+        overflow-y: visible !important;
+        padding: 16px !important;
+      }
+
+      /* Sidebar se convierte en panel inferior */
+      .pos-sidebar {
+        width: 100% !important;
+        border-left: none !important;
+        border-top: 1px solid var(--border);
+        max-height: none !important;
+      }
+
+      .pos-wrapper {
+        overflow: visible !important;
+        flex: none !important;
+      }
+
+      /* Barra de scan: full width */
+      .pos-scan-wrap {
+        border-radius: 10px !important;
+      }
+
+      /* Reducir padding en header */
+      .pos-header {
+        padding: 0 16px;
+        flex-wrap: wrap;
+        height: auto;
+        min-height: 52px;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        gap: 8px;
+      }
+
+      /* Item del carrito compacto */
+      .pos-item {
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      nav { padding: 0 12px; }
+      .pos-sidebar-inner { padding: 16px; }
+    }
+
+    /* ── Contenedor de error en POS ─────────────────────────────────────── */
+    #posError {
+      display: none;
+      background: #FFF5F5;
+      border: 1px solid var(--red-border);
+      border-left: 3px solid var(--red);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin: 0 0 12px;
+      font-size: 13px;
+      color: var(--red);
+      font-weight: 500;
+      line-height: 1.4;
+    }
   </style>
 </head>
 <body>
-
   <nav>
     <div class="nav-left">
       <a href="index.html" class="logo">
@@ -24,7 +102,10 @@
     </div>
     <div class="nav-right">
       <button class="notif-btn">
-        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke-width="2" stroke-linecap="round"/><path d="M13.73 21a2 2 0 0 1-3.46 0" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 24 24">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke-width="2" stroke-linecap="round"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke-width="2" stroke-linecap="round"/>
+        </svg>
         <span class="notif-dot"></span>
       </button>
       <div class="user-info">
@@ -34,10 +115,8 @@
           <div class="user-role">Warehouse Manager</div>
         </div>
       </div>
-      <button id="logoutBtn" title="Cerrar sesión" style="
-        width:36px;height:36px;border:1px solid var(--border);border-radius:8px;
-        background:var(--white);cursor:pointer;display:flex;align-items:center;
-        justify-content:center;transition:background .15s;color:var(--slate);">
+      <button id="logoutBtn" title="Cerrar sesión"
+              style="width:36px;height:36px;border:1px solid var(--border);border-radius:8px;background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate);">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
           <polyline points="16 17 21 12 16 7"/>
@@ -48,40 +127,42 @@
   </nav>
 
   <div class="pos-wrapper">
-
     <header class="pos-header">
       <div class="pos-header-left">
         <span class="pos-title">Salida de Materiales (POS)</span>
       </div>
       <div class="pos-scanner-status">
-        <span class="pos-scanner-dot"></span>
-        Scanner Listo
+        <span class="pos-scanner-dot"></span>Scanner Listo
       </div>
       <div class="pos-user">
-        <div class="pos-user-name" id="posUserName">Admin User</div>
+        <div class="pos-user-name" id="posUserName">Cargando...</div>
         <div class="pos-user-station">Estación 01</div>
       </div>
     </header>
 
     <div class="pos-layout">
-
+      <!-- Panel izquierdo: buscador + carrito -->
       <div class="pos-left">
 
+        <!-- Error container -->
+        <div id="posError"></div>
+
+        <!-- Buscador con autocompletado -->
         <div class="pos-scan-wrap">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input
-            class="pos-scan-input"
-            id="scanInput"
-            type="text"
-            placeholder="Escanear o ingresar código de producto (SKU / QR)..."
-            autocomplete="off"
-            onkeydown="handleScanKey(event)">
+          <svg viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input class="pos-scan-input" id="scanInput" type="text"
+                 placeholder="Escanear QR o buscar por nombre / SKU..."
+                 autocomplete="off">
           <button class="pos-enter-btn" onclick="addFromInput()">ENTER</button>
         </div>
 
+        <!-- Carrito -->
         <div class="pos-items-card">
           <div class="pos-items-header">
-            <span class="pos-items-title">Artículos Escaneados</span>
+            <span class="pos-items-title">Artículos en el Carrito</span>
             <button class="pos-clear-btn" onclick="clearAll()">Limpiar Todo</button>
           </div>
           <div class="pos-items-list" id="itemsList"></div>
@@ -89,19 +170,21 @@
 
       </div>
 
+      <!-- Sidebar: resumen y confirmación -->
       <aside class="pos-sidebar">
         <div class="pos-sidebar-inner">
-
           <div class="pos-sidebar-title">Resumen de Salida</div>
 
           <div>
             <div class="pos-field-label">Destinatario / Proyecto</div>
-            <input class="pos-sidebar-input" id="destInput" type="text" placeholder="Proyecto Solar - Santa Fe">
+            <input class="pos-sidebar-input" id="destInput" type="text"
+                   placeholder="Ej. Proyecto Solar - Santa Fe">
           </div>
 
           <div>
             <div class="pos-field-label">Notas de Salida</div>
-            <textarea class="pos-sidebar-textarea" id="notasInput" placeholder="Referencia de orden, responsable..."></textarea>
+            <textarea class="pos-sidebar-textarea" id="notasInput"
+                      placeholder="Referencia de orden, responsable..."></textarea>
           </div>
 
           <div class="pos-summary">
@@ -119,25 +202,30 @@
             </div>
             <div class="pos-total-row">
               <span class="pos-total-label">Monto Total</span>
-              <span class="pos-total-val" id="montoTotal">$0.00</span>
+              <span class="pos-total-val" id="montoTotal">$0.00 MXN</span>
             </div>
             <button class="pos-confirm-btn" id="confirmBtn" onclick="confirmarSalida()" disabled>
-              <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <svg viewBox="0 0 24 24">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
               Confirmar Salida
             </button>
             <button class="pos-cancel-btn" onclick="cancelar()">Cancelar Operación</button>
           </div>
-
         </div>
       </aside>
-
     </div>
   </div>
 
+  <!-- Overlay de éxito -->
   <div class="pos-success-overlay" id="successOverlay">
     <div class="pos-success-card">
       <div class="pos-success-icon">
-        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <svg viewBox="0 0 24 24">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
       </div>
       <div class="pos-success-title">¡Transacción Exitosa!</div>
       <div class="pos-success-msg" id="successMsg"></div>
@@ -147,19 +235,12 @@
     </div>
   </div>
 
+  <!-- Supabase SDK — OBLIGATORIO antes que los scripts propios -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="api-config.js"></script>
   <script src="auth.js"></script>
   <script src="data.js"></script>
   <script src="nav.js"></script>
   <script src="pos.js"></script>
-  <script>
-    // Mostrar nombre del usuario en el header POS
-    (function () {
-      var session = EcoAuth.getSession();
-      if (session) {
-        var el = document.getElementById('posUserName');
-        if (el) el.textContent = session.nombre;
-      }
-    })();
-  </script>
 </body>
 </html>

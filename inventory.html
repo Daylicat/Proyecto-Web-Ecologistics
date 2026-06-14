@@ -6,9 +6,60 @@
   <title>EcoLogistics — Inventario</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Responsive: tabla con scroll horizontal en mobile ───────────────── */
+    .table-card {
+      overflow-x: auto;
+    }
+    .inv-table {
+      min-width: 640px;
+    }
+
+    @media (max-width: 768px) {
+      main { padding: 16px; }
+
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .filter-tabs {
+        flex-wrap: wrap;
+      }
+
+      /* Modales a pantalla completa en mobile */
+      .modal {
+        max-width: 100% !important;
+        margin: 0 !important;
+        border-radius: 16px 16px 0 0 !important;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
+      .modal-overlay {
+        align-items: flex-end !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .page-title { font-size: 18px; }
+    }
+
+    /* ── Modal detalle: scroll interno ───────────────────────────────────── */
+    #modalDetalle .modal {
+      max-width: 680px;
+    }
+
+    /* ── form-input textarea ─────────────────────────────────────────────── */
+    textarea.form-input {
+      resize: vertical;
+      min-height: 72px;
+      line-height: 1.5;
+      padding: 9px 12px;
+    }
+  </style>
 </head>
 <body>
-
   <nav>
     <div class="nav-left">
       <a href="index.html" class="logo">
@@ -22,24 +73,22 @@
       <ul class="nav-links"></ul>
     </div>
     <div class="nav-right">
-      <button class="notif-btn" id="notifBtn">
+      <button class="notif-btn">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
           <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
         </svg>
-        <span class="notif-dot" id="notifDot"></span>
+        <span class="notif-dot"></span>
       </button>
       <div class="user-info">
         <div class="user-avatar">AU</div>
         <div class="user-meta">
           <div class="user-name">Admin User</div>
-          <div class="user-role">Gerente de Almacén</div>
+          <div class="user-role">Gerente</div>
         </div>
       </div>
-      <button id="logoutBtn" title="Cerrar sesión" style="
-        width:36px;height:36px;border:1px solid var(--border);border-radius:8px;
-        background:var(--white);cursor:pointer;display:flex;align-items:center;
-        justify-content:center;transition:background .15s;color:var(--slate);">
+      <button id="logoutBtn" title="Cerrar sesión"
+              style="width:36px;height:36px;border:1px solid var(--border);border-radius:8px;background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate);">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
           <polyline points="16 17 21 12 16 7"/>
@@ -50,7 +99,6 @@
   </nav>
 
   <main>
-
     <div class="page-header">
       <h1 class="page-title">Inventario de Productos</h1>
       <button class="btn-primary" onclick="window.location.href='nuevo-producto.html'">
@@ -69,14 +117,14 @@
           <line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
         <input class="search-input" type="text" id="searchInput"
-               placeholder="Buscar por nombre o escaneo QR..."
+               placeholder="Buscar por nombre, SKU o categoría..."
                oninput="invFilterTable()">
       </div>
       <div class="filter-tabs">
-        <button class="filter-tab active" onclick="invSetFilter('todos', this)">Todos</button>
-        <button class="filter-tab" onclick="invSetFilter('bajo stock', this)">Bajo Stock</button>
-        <button class="filter-tab" onclick="invSetFilter('critico', this)">Crítico</button>
-        <button class="filter-tab" onclick="invSetFilter('sin stock', this)">Sin Stock</button>
+        <button class="filter-tab active" onclick="invSetFilter('todos',this)">Todos</button>
+        <button class="filter-tab" onclick="invSetFilter('bajo stock',this)">Bajo Stock</button>
+        <button class="filter-tab" onclick="invSetFilter('critico',this)">Crítico</button>
+        <button class="filter-tab" onclick="invSetFilter('sin stock',this)">Sin Stock</button>
       </div>
     </div>
 
@@ -93,32 +141,39 @@
             <th>Acciones</th>
           </tr>
         </thead>
-        <tbody id="tableBody"></tbody>
+        <tbody id="tableBody">
+          <tr>
+            <td colspan="7" style="text-align:center;padding:32px;color:var(--slate-light)">
+              Cargando inventario...
+            </td>
+          </tr>
+        </tbody>
       </table>
       <div class="pagination-row">
         <span class="pagination-info" id="paginationInfo"></span>
         <div class="pagination-controls">
           <button class="page-btn" id="prevBtn" onclick="invChangePage(-1)">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
               <polyline points="15 18 9 12 15 6"/>
             </svg>
           </button>
           <div class="page-numbers" id="pageNumbers"></div>
           <button class="page-btn" id="nextBtn" onclick="invChangePage(1)">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
               <polyline points="9 18 15 12 9 6"/>
             </svg>
           </button>
         </div>
       </div>
     </div>
-
   </main>
 
+  <!-- Supabase SDK — OBLIGATORIO antes que los scripts propios -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="api-config.js"></script>
   <script src="auth.js"></script>
   <script src="data.js"></script>
   <script src="nav.js"></script>
   <script src="inventory.js"></script>
-
 </body>
 </html>

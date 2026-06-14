@@ -6,15 +6,84 @@
   <title>EcoLogistics — Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Responsive dashboard ─────────────────────────────────────────────── */
+
+    /* KPI bar: 5 cols → 3+2 en tablet → 2 en mobile */
+    #dashKpiBar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 1024px) {
+      #dashKpiBar {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .dashboard-grid {
+        grid-template-columns: 1fr !important;
+      }
+      /* transactions-card ocupa toda la fila */
+      .transactions-card {
+        grid-column: 1 !important;
+        grid-row: auto !important;
+      }
+      .donut-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 600px) {
+      #dashKpiBar {
+        grid-template-columns: 1fr 1fr;
+      }
+      main {
+        padding: 16px;
+      }
+      .warnings-row {
+        grid-template-columns: 1fr !important;
+      }
+      .chart-area {
+        height: 130px !important;
+      }
+    }
+
+    @media (max-width: 360px) {
+      #dashKpiBar {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Tabla de últimas salidas: scroll horizontal en mobile */
+    .transactions-card table {
+      min-width: 480px;
+    }
+    .transactions-card {
+      overflow-x: auto;
+    }
+
+    /* ── Sección Actividad Reciente ─────────────────────────────────────── */
+    .activity-card {
+      grid-column: 1 / -1;
+    }
+
+    .activity-card .activity-body {
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .activity-body::-webkit-scrollbar        { width: 4px; }
+    .activity-body::-webkit-scrollbar-track  { background: var(--bg); border-radius: 4px; }
+    .activity-body::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 4px; }
+  </style>
 </head>
 <body>
-
   <nav>
     <div class="nav-left">
       <a href="index.html" class="logo">
-        <div class="logo-icon">
-          <svg viewBox="0 0 24 24"><path d="M12 2L3 7l9 5 9-5-9-5zM3 17l9 5 9-5M3 12l9 5 9-5"/></svg>
-        </div>
+        <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2L3 7l9 5 9-5-9-5zM3 17l9 5 9-5M3 12l9 5 9-5"/></svg></div>
         <span class="logo-text">EcoLogistics</span>
       </a>
       <ul class="nav-links"></ul>
@@ -31,138 +100,112 @@
           <div class="user-role">Gerente de Almacén</div>
         </div>
       </div>
-      <button id="logoutBtn" title="Cerrar sesión" style="
-        width:36px;height:36px;border:1px solid var(--border);border-radius:8px;
-        background:var(--white);cursor:pointer;display:flex;align-items:center;
-        justify-content:center;transition:background .15s;color:var(--slate);">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-          <polyline points="16 17 21 12 16 7"/>
-          <line x1="21" y1="12" x2="9" y2="12"/>
-        </svg>
+      <button id="logoutBtn" title="Cerrar sesión" style="width:36px;height:36px;border:1px solid var(--border);border-radius:8px;background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </button>
     </div>
   </nav>
 
   <main>
+    <!-- KPI bar superior — poblado por dashboard.js -->
+    <div id="dashKpiBar"></div>
 
+    <!-- Alertas — pobladas por dashboard.js -->
     <div id="alertaCritica"></div>
     <div id="alertasWarning" class="warnings-row"></div>
 
     <div class="dashboard-grid">
 
-      <!-- Salidas Semanales -->
+      <!-- Gráfica semanal — SVG reemplazado por dashboard.js con datos reales -->
       <div class="card">
         <div class="chart-header">
           <div class="card-title">Salidas Semanales de Materiales</div>
           <span class="chart-period">Últimos 7 Días</span>
         </div>
         <div class="chart-area">
-          <svg viewBox="0 0 480 180" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#2DBE6C" stop-opacity="0.22"/>
-                <stop offset="100%" stop-color="#2DBE6C" stop-opacity="0.01"/>
-              </linearGradient>
-            </defs>
-            <path d="M0,140 C40,138 60,120 80,100 C110,72 130,40 160,35 C190,30 210,75 240,80 C260,83 280,65 310,58 C340,52 360,100 400,115 C430,126 460,138 480,142 L480,180 L0,180 Z" fill="url(#areaGrad)"/>
-            <path d="M0,140 C40,138 60,120 80,100 C110,72 130,40 160,35 C190,30 210,75 240,80 C260,83 280,65 310,58 C340,52 360,100 400,115 C430,126 460,138 480,142" fill="none" stroke="#2DBE6C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Placeholder hasta que dashboard.js cargue -->
+          <svg viewBox="0 0 480 180" preserveAspectRatio="none">
+            <line x1="0" y1="90" x2="480" y2="90" stroke="var(--border)" stroke-width="1" stroke-dasharray="4"/>
+            <text x="240" y="94" text-anchor="middle" font-size="12" fill="var(--slate-light)" font-family="DM Sans, sans-serif">Cargando datos...</text>
           </svg>
         </div>
         <div class="x-labels">
-          <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+          <span>—</span><span>—</span><span>—</span><span>—</span><span>—</span><span>—</span><span>—</span>
         </div>
       </div>
 
-      <!-- Resumen KPIs -->
+      <!-- KPI inventario -->
       <div class="card">
         <div class="kpi-label">Resumen de KPIs</div>
         <div class="progress-row">
-          <span class="progress-name">Capacidad del Almacén</span>
-          <span class="progress-pct">84%</span>
+          <span class="progress-name">Estado del Stock</span>
         </div>
-        <div class="progress-bar">
-          <div class="progress-fill" style="width: 84%"></div>
-        </div>
+        <div class="progress-bar" id="dashStockBar" style="display:flex;margin-bottom:8px"></div>
+        <div id="dashStockLegend" style="display:flex;flex-wrap:wrap;gap:12px;margin:0 0 20px;font-size:11px;color:var(--slate)"></div>
         <div class="inv-value-label">Valor de Inventario</div>
         <div class="inv-value-row">
-          <div class="inv-value">$124,500.00</div>
-          <button class="trend-btn">
-            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-              <polyline points="17 6 23 6 23 12"/>
-            </svg>
+          <div class="inv-value" id="dashValorInv">Cargando...</div>
+          <button class="trend-btn" title="Ir a Reportes" onclick="window.location.href='reportes.html'">
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
           </button>
         </div>
       </div>
 
-      <!-- Inventario por Categoría -->
+      <!-- Donut por categoría — poblado por dashboard.js con datos reales -->
       <div class="card">
         <div class="card-title" style="margin-bottom:20px">Inventario por Categoría</div>
         <div class="donut-card">
           <div class="donut-wrap">
+            <!-- Placeholder -->
             <svg width="130" height="130" viewBox="0 0 130 130">
               <circle cx="65" cy="65" r="50" fill="none" stroke="#E2E8F0" stroke-width="22"/>
-              <circle cx="65" cy="65" r="50" fill="none" stroke="#2DBE6C" stroke-width="22" stroke-dasharray="125.66 188.5"  stroke-dashoffset="0"       transform="rotate(-90 65 65)"/>
-              <circle cx="65" cy="65" r="50" fill="none" stroke="#3B82F6" stroke-width="22" stroke-dasharray="78.54 235.62"  stroke-dashoffset="-125.66" transform="rotate(-90 65 65)"/>
-              <circle cx="65" cy="65" r="50" fill="none" stroke="#F59E0B" stroke-width="22" stroke-dasharray="62.83 251.33"  stroke-dashoffset="-204.2"  transform="rotate(-90 65 65)"/>
-              <circle cx="65" cy="65" r="50" fill="none" stroke="#EF4444" stroke-width="22" stroke-dasharray="47.12 267.04"  stroke-dashoffset="-267.03" transform="rotate(-90 65 65)"/>
             </svg>
           </div>
           <div class="donut-legend">
-            <div class="legend-item"><div class="legend-left"><span class="legend-dot" style="background:#2DBE6C"></span><span class="legend-name">Cables</span></div><span class="legend-pct">40%</span></div>
-            <div class="legend-item"><div class="legend-left"><span class="legend-dot" style="background:#3B82F6"></span><span class="legend-name">Paneles</span></div><span class="legend-pct">25%</span></div>
-            <div class="legend-item"><div class="legend-left"><span class="legend-dot" style="background:#F59E0B"></span><span class="legend-name">Interruptores</span></div><span class="legend-pct">20%</span></div>
-            <div class="legend-item"><div class="legend-left"><span class="legend-dot" style="background:#EF4444"></span><span class="legend-name">Herramientas</span></div><span class="legend-pct">15%</span></div>
+            <div style="font-size:12px;color:var(--slate-light)">Cargando...</div>
           </div>
         </div>
       </div>
 
-      <!-- Transacciones Recientes -->
+      <!-- Últimas salidas -->
       <div class="card transactions-card">
         <div class="tx-header">
-          <div class="card-title">Transacciones Recientes</div>
+          <div class="card-title">Últimas Salidas</div>
           <a href="reportes.html" class="view-all">Ver Todo</a>
         </div>
         <table>
           <thead>
             <tr>
               <th>Producto</th>
-              <th>Destinatario</th>
+              <th>Destino</th>
               <th>Cantidad</th>
-              <th>Fecha / Hora</th>
+              <th>Fecha</th>
               <th>Estado</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td><div class="tx-product">Paneles LED 60x60</div><div class="tx-sku">SKU-9921-X</div></td>
-              <td><span class="tx-recipient">Sitio Alfa-4</span></td>
-              <td><span class="tx-qty">12 unidades</span></td>
-              <td><span class="tx-date">Oct 24, 14:22</span></td>
-              <td><span class="badge badge-delivered">Entregado</span></td>
-            </tr>
-            <tr>
-              <td><div class="tx-product">Interruptor 20A</div><div class="tx-sku">SKU-1022-B</div></td>
-              <td><span class="tx-recipient">Hub Principal</span></td>
-              <td><span class="tx-qty">45 unidades</span></td>
-              <td><span class="tx-date">Oct 24, 13:05</span></td>
-              <td><span class="badge badge-processing">En Proceso</span></td>
-            </tr>
-            <tr>
-              <td><div class="tx-product">Cables de Cobre 2.5mm</div><div class="tx-sku">SKU-8823-C</div></td>
-              <td><span class="tx-recipient">Equipo de Mantenimiento</span></td>
-              <td><span class="tx-qty">150 unidades</span></td>
-              <td><span class="tx-date">Oct 24, 11:45</span></td>
-              <td><span class="badge badge-lowstock">Stock Bajo</span></td>
-            </tr>
+          <tbody id="dashUltimasSalidas">
+            <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--slate-light)">Cargando...</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Actividad Reciente — nueva sección -->
+      <div class="card activity-card">
+        <div class="tx-header">
+          <div class="card-title">Actividad Reciente</div>
+          <span style="font-size:11px;color:var(--slate-light);font-weight:500">Últimos 10 eventos</span>
+        </div>
+        <div class="activity-body" id="dashActividad">
+          <div style="text-align:center;padding:20px;color:var(--slate-light);font-size:13px">Cargando...</div>
+        </div>
       </div>
 
     </div>
   </main>
 
+  <!-- Supabase SDK — OBLIGATORIO antes que los scripts propios -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="api-config.js"></script>
   <script src="auth.js"></script>
   <script src="data.js"></script>
   <script src="nav.js"></script>

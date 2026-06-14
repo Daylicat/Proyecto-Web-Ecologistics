@@ -1,159 +1,113 @@
-
-// ─── auth.js — Módulo central de autenticación y roles ────────────────────────
-
+// ─── auth.js ─────────────────────────────────────────────────────────────────
+// Requiere: Supabase SDK cargado ANTES (CDN)
+// Requiere: api-config.js cargado ANTES (expone window.SUPABASE_URL y window.SUPABASE_ANON_KEY)
 (function () {
+  'use strict';
 
-  // Usuarios y sus permisos
-  var USERS = {
-    'admin@ecologistics.com': {
-      pass:   'admin2024',
-      rol:    'admin',
-      nombre: 'Admin User',
-      cargo:  'Gerente de Almacén',
-      avatar: 'AU',
-      redirect: 'index.html'
-    },
-    'trabajador@ecologistics.com': {
-      pass:   'worker2024',
-      rol:    'trabajador',
-      nombre: 'Trabajador',
-      cargo:  'Operador de Almacén',
-      avatar: 'TR',
-      redirect: 'inventory.html'
-    }
-  };
-
-  // Páginas permitidas por rol
   var PERMISOS = {
-    admin:      ['index.html', 'inventory.html', 'pos.html', 'reportes.html', 'nuevo-producto.html'],
-    trabajador: ['inventory.html', 'pos.html', 'nuevo-producto.html']
+    admin:      ['index.html','inventory.html','pos.html','reportes.html','nuevo-producto.html'],
+    trabajador: ['inventory.html','pos.html','nuevo-producto.html']
   };
 
-  // Navegación visible por rol
   var NAV_LINKS = {
     admin: [
-      { href: 'index.html',     label: 'Dashboard'    },
-      { href: 'inventory.html', label: 'Inventario'   },
-      { href: 'pos.html',       label: 'Salidas POS'  },
-      { href: 'reportes.html',  label: 'Reportes'     }
+      { href:'index.html',          label:'Dashboard'      },
+      { href:'inventory.html',      label:'Inventario'     },
+      { href:'pos.html',            label:'Salidas POS'    },
+      { href:'reportes.html',       label:'Reportes'       }
     ],
     trabajador: [
-      { href: 'inventory.html',      label: 'Inventario'      },
-      { href: 'pos.html',            label: 'Salidas POS'     },
-      { href: 'nuevo-producto.html', label: 'Nuevo Producto'  }
+      { href:'inventory.html',      label:'Inventario'     },
+      { href:'pos.html',            label:'Salidas POS'    },
+      { href:'nuevo-producto.html', label:'Nuevo Producto' }
     ]
   };
 
-  // ── Helpers de sesión ──────────────────────────────────────────────────────
+  function pagina() {
+    var p = window.location.pathname.split('/');
+    return p[p.length - 1] || 'index.html';
+  }
 
-  function getSession() {
+  function getSB() {
+    if (!window.supabase || !window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) return null;
+    return window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY, {
+      auth: { persistSession: true, storageKey: 'eco_session', autoRefreshToken: true, detectSessionInUrl: false }
+    });
+  }
+
+  // Devuelve { userId, email, rol, nombre, cargo, avatar } o null
+  async function getSession() {
+    var sb = getSB();
+    if (!sb) return null;
     try {
-      var raw = sessionStorage.getItem('eco_session');
-      return raw ? JSON.parse(raw) : null;
-    } catch (e) { return null; }
-  }
+      var result  = await sb.auth.getSession();
+      var session = result.data && result.data.session;
+      if (!session) return null;
 
-  function setSession(email, userData) {
-    var session = {
-      email:  email,
-      rol:    userData.rol,
-      nombre: userData.nombre,
-      cargo:  userData.cargo,
-      avatar: userData.avatar
-    };
-    sessionStorage.setItem('eco_session', JSON.stringify(session));
-  }
+      var profileRes = await sb.from('profiles')
+        .select('rol, nombre, cargo, avatar')
+        .eq('id', session.user.id)
+        .single();
 
-  function clearSession() {
-    sessionStorage.removeItem('eco_session');
-  }
+      if (profileRes.error || !profileRes.data) return null;
 
-  // ── Página actual ──────────────────────────────────────────────────────────
-
-  function getPaginaActual() {
-    var path = window.location.pathname;
-    var parts = path.split('/');
-    return parts[parts.length - 1] || 'index.html';
-  }
-
-  // ── Guardar y verificar acceso ─────────────────────────────────────────────
-
-  function verificarAcceso() {
-    var pagina  = getPaginaActual();
-    var session = getSession();
-
-    // Si es la página de login, no hacer nada
-    if (pagina === 'login.html' || pagina === '') return;
-
-    // Si no hay sesión, redirigir a login
-    if (!session) {
-      window.location.replace('login.html');
-      return;
-    }
-
-    // Verificar si el rol tiene permiso para esta página
-    var permitidas = PERMISOS[session.rol] || [];
-    if (permitidas.indexOf(pagina) === -1) {
-      // Redirigir a la primera página permitida del rol
-      window.location.replace(permitidas[0] || 'login.html');
+      return {
+        userId: session.user.id,
+        email:  session.user.email,
+        rol:    profileRes.data.rol,
+        nombre: profileRes.data.nombre,
+        cargo:  profileRes.data.cargo,
+        avatar: profileRes.data.avatar
+          || (profileRes.data.nombre || session.user.email || 'U').charAt(0).toUpperCase()
+      };
+    } catch (e) {
+      console.error('[Auth] getSession error:', e);
+      return null;
     }
   }
 
-  // ── Renderizar nav dinámico según rol ─────────────────────────────────────
-
-  function renderizarNav() {
-    var session = getSession();
-    if (!session) return;
-
-    var links    = NAV_LINKS[session.rol] || [];
-    var pagina   = getPaginaActual();
-    var navLinks = document.querySelector('.nav-links');
-    if (!navLinks) return;
-
-    navLinks.innerHTML = links.map(function (l) {
-      var isActive = pagina === l.href ? ' class="active"' : '';
-      return '<li><a href="' + l.href + '"' + isActive + '>' + l.label + '</a></li>';
-    }).join('');
-
-    // Actualizar datos del usuario en el nav
-    var userNameEl = document.querySelector('.user-name');
-    var userRoleEl = document.querySelector('.user-role');
-    var avatarEl   = document.querySelector('.user-avatar');
-
-    if (userNameEl)  userNameEl.textContent = session.nombre;
-    if (userRoleEl)  userRoleEl.textContent = session.cargo;
-    if (avatarEl)    avatarEl.textContent   = session.avatar;
+  async function verificar() {
+    var pg = pagina();
+    if (pg === 'login.html' || pg === '') return;
+    var s = await getSession();
+    if (!s) { window.location.replace('login.html'); return; }
+    var perms = PERMISOS[s.rol] || [];
+    if (perms.indexOf(pg) === -1) window.location.replace(perms[0] || 'login.html');
   }
 
-  // ── Login ──────────────────────────────────────────────────────────────────
+  async function renderNav() {
+    var s = await getSession();
+    if (!s) return;
 
-  function doLogin(email, pass) {
-    email = (email || '').trim().toLowerCase();
-    var userData = USERS[email];
-    if (!userData || userData.pass !== pass) return null;
-    setSession(email, userData);
-    return userData;
+    var links = NAV_LINKS[s.rol] || [];
+    var pg    = pagina();
+    var ul    = document.querySelector('.nav-links');
+    if (ul) {
+      ul.innerHTML = links.map(function (l) {
+        return '<li><a href="' + l.href + '"' + (pg === l.href ? ' class="active"' : '') + '>' + l.label + '</a></li>';
+      }).join('');
+    }
+
+    var nameEl   = document.querySelector('.user-name');
+    var roleEl   = document.querySelector('.user-role');
+    var avatarEl = document.querySelector('.user-avatar');
+    if (nameEl)   nameEl.textContent   = s.nombre || 'Usuario';
+    if (roleEl)   roleEl.textContent   = s.cargo  || '';
+    if (avatarEl) avatarEl.textContent = s.avatar || 'U';
   }
 
-  // ── Logout ─────────────────────────────────────────────────────────────────
-
-  function logout() {
-    clearSession();
+  async function logout() {
+    var sb = getSB();
+    if (sb) { try { await sb.auth.signOut(); } catch (e) {} }
     window.location.replace('login.html');
   }
 
-  // ── Exponer API global ─────────────────────────────────────────────────────
+  function initLogout() {
+    var btn = document.getElementById('logoutBtn');
+    if (btn) btn.addEventListener('click', function (e) { e.preventDefault(); logout(); });
+  }
 
-  window.EcoAuth = {
-    verificarAcceso: verificarAcceso,
-    renderizarNav:   renderizarNav,
-    doLogin:         doLogin,
-    logout:          logout,
-    getSession:      getSession,
-    USERS:           USERS
-  };
+  window.EcoAuth = { getSession, verificar, renderNav, logout, initLogout };
 
-  // Ejecutar verificación automáticamente al cargar
-  verificarAcceso();
-
+  verificar();
 })();

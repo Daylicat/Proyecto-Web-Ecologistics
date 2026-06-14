@@ -1,4 +1,7 @@
-
+/* ════════════════════════════════════════════════════
+   EcoLogistics — Global Stylesheet
+   Usado por todas las páginas. No modificar por página.
+   ════════════════════════════════════════════════════ */
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -36,7 +39,9 @@ body {
   line-height: 1.5;
 }
 
-
+/* ════════════════════════════════════════════════════
+   NAV
+   ════════════════════════════════════════════════════ */
 nav {
   background: var(--white);
   border-bottom: 1px solid var(--border);
@@ -115,9 +120,14 @@ nav {
 .user-name { font-weight: 600; font-size: 13px; }
 .user-role { font-size: 11px; color: var(--slate-light); }
 
-
+/* ════════════════════════════════════════════════════
+   MAIN CONTAINER
+   ════════════════════════════════════════════════════ */
 main { max-width: 1280px; margin: 0 auto; padding: 28px 32px; }
 
+/* ════════════════════════════════════════════════════
+   CARD BASE
+   ════════════════════════════════════════════════════ */
 .card {
   background: var(--white); border: 1px solid var(--border);
   border-radius: 12px; padding: 24px;
@@ -128,6 +138,9 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 32px; }
 
 .card-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
 
+/* ════════════════════════════════════════════════════
+   BUTTONS
+   ════════════════════════════════════════════════════ */
 .btn-primary {
   display: inline-flex; align-items: center; gap: 8px;
   background: var(--green); color: #fff; border: none; border-radius: 8px;
@@ -149,13 +162,18 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 32px; }
 
 .btn-secondary:hover { background: var(--bg); }
 
+/* ════════════════════════════════════════════════════
+   PAGE HEADER
+   ════════════════════════════════════════════════════ */
 .page-header {
   display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;
 }
 
 .page-title { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.4px; }
 
-
+/* ════════════════════════════════════════════════════
+   BADGES
+   ════════════════════════════════════════════════════ */
 .badge {
   display: inline-flex; align-items: center;
   padding: 3px 10px; border-radius: 99px;
@@ -177,7 +195,9 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 32px; }
 .status-optimo   { background: #DCFCE7; color: #15803D; }
 .status-sinstock { background: #F1F5F9; color: var(--slate); }
 
-
+/* ════════════════════════════════════════════════════
+   ALERTS — Dashboard
+   ════════════════════════════════════════════════════ */
 .alert-critical {
   background: var(--red-bg); border: 1px solid var(--red-border);
   border-left: 4px solid var(--red); border-radius: 10px;
@@ -236,6 +256,9 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 32px; }
 
 .warn-link:hover { background: rgba(245,158,11,.12); }
 
+/* ════════════════════════════════════════════════════
+   DASHBOARD GRID
+   ════════════════════════════════════════════════════ */
 .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
 .dashboard-grid > * { animation: fadeIn .4s ease both; }
@@ -314,6 +337,9 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 32px; }
 .view-all { font-size: 12px; font-weight: 600; color: var(--green); text-decoration: none; transition: color .15s; }
 .view-all:hover { color: var(--green-dark); }
 
+/* ════════════════════════════════════════════════════
+   TABLE BASE
+   ════════════════════════════════════════════════════ */
 table { width: 100%; border-collapse: collapse; }
 
 thead th {
@@ -333,6 +359,9 @@ tbody td  { padding: 14px 0; vertical-align: middle; }
 .tx-qty       { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; }
 .tx-date      { font-size: 12px; color: var(--slate-light); font-family: 'DM Mono', monospace; white-space: nowrap; }
 
+/* ════════════════════════════════════════════════════
+   INVENTORY PAGE
+   ════════════════════════════════════════════════════ */
 .toolbar {
   display: flex; align-items: center; gap: 16px;
   padding: 14px 20px; margin-bottom: 16px; flex-wrap: wrap;
@@ -468,6 +497,9 @@ tbody td  { padding: 14px 0; vertical-align: middle; }
 .empty-state svg  { width: 40px; height: 40px; stroke: var(--border); fill: none; margin-bottom: 12px; }
 .empty-state p { font-size: 14px; }
 
+/* ════════════════════════════════════════════════════
+   MODAL
+   ════════════════════════════════════════════════════ */
 .modal-overlay {
   position: fixed; inset: 0; background: rgba(15,23,42,.45);
   backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center;
@@ -519,6 +551,9 @@ tbody td  { padding: 14px 0; vertical-align: middle; }
   gap: 10px; padding: 16px 24px; border-top: 1px solid var(--border);
 }
 
+/* ════════════════════════════════════════════════════
+   NUEVO PRODUCTO PAGE
+   ════════════════════════════════════════════════════ */
 .np-header {
   height: 56px;
   background: var(--white);
@@ -560,6 +595,7 @@ tbody td  { padding: 14px 0; vertical-align: middle; }
   animation: fadeIn .35s ease both;
 }
 
+/* Left — form card */
 .np-form-card { display: flex; flex-direction: column; gap: 0; }
 
 .np-title    { font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; margin-bottom: 6px; }
@@ -602,7 +638,7 @@ tbody td  { padding: 14px 0; vertical-align: middle; }
 .np-submit:hover  { background: var(--green-dark); }
 .np-submit:active { transform: scale(.99); }
 
-
+/* Right — QR + tip */
 .np-right { display: flex; flex-direction: column; gap: 16px; }
 
 .np-qr-card { text-align: center; }
@@ -642,7 +678,7 @@ tbody td  { padding: 14px 0; vertical-align: middle; }
 
 .np-btn-outline svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-
+/* Tip card */
 .np-tip {
   background: var(--green-light);
   border: 1px solid #b7ead0;
@@ -659,6 +695,9 @@ tbody td  { padding: 14px 0; vertical-align: middle; }
 .np-tip-title { font-size: 12px; font-weight: 700; color: var(--green-dark); margin-bottom: 3px; }
 .np-tip-text  { font-size: 12px; color: #2d7a50; line-height: 1.5; }
 
+/* ════════════════════════════════════════════════════
+   ANIMATIONS
+   ════════════════════════════════════════════════════ */
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-8px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -669,6 +708,9 @@ tbody td  { padding: 14px 0; vertical-align: middle; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ════════════════════════════════════════════════════
+   POS — SALIDA DE MATERIALES
+   ════════════════════════════════════════════════════ */
 
 .pos-body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
@@ -829,7 +871,7 @@ tbody td  { padding: 14px 0; vertical-align: middle; }
 
 .pos-cancel-btn:hover { background: var(--bg); }
 
-
+/* ── POS additions ── */
 .pos-wrapper { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
 
 .pos-qty-input {
@@ -848,6 +890,7 @@ tbody td  { padding: 14px 0; vertical-align: middle; }
 .pos-total-label { font-size: 14px; font-weight: 700; color: var(--text); }
 .pos-total-val   { font-size: 18px; font-weight: 700; color: var(--green); font-family: 'DM Mono', monospace; letter-spacing: -0.5px; }
 
+/* Success overlay */
 .pos-success-overlay {
   position: fixed; inset: 0; background: rgba(15,23,42,.55);
   backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center;
@@ -887,8 +930,11 @@ tbody td  { padding: 14px 0; vertical-align: middle; }
   to   { transform: scaleX(0); }
 }
 
+/* ════════════════════════════════════════════════════
+   REPORTES PAGE
+   ════════════════════════════════════════════════════ */
 
-
+/* Page header toolbar */
 .rep-header {
   display: flex; align-items: flex-start; justify-content: space-between;
   gap: 24px; margin-bottom: 28px; flex-wrap: wrap;
@@ -941,7 +987,7 @@ tbody td  { padding: 14px 0; vertical-align: middle; }
 .rep-export-btn:active { transform: scale(.98); }
 .rep-export-btn svg    { width: 16px; height: 16px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-
+/* KPI cards row */
 .rep-kpi-grid {
   display: grid; grid-template-columns: repeat(4, 1fr);
   gap: 14px; margin-bottom: 24px;
@@ -972,7 +1018,7 @@ tbody td  { padding: 14px 0; vertical-align: middle; }
 
 .rep-kpi-note { font-size: 12px; color: var(--slate); font-style: italic; margin-top: 4px; }
 
-
+/* Movements table card */
 .rep-table-card { padding: 0; overflow: hidden; }
 
 .rep-table-header {
@@ -993,7 +1039,7 @@ tbody td  { padding: 14px 0; vertical-align: middle; }
 .rep-icon-btn:hover { background: var(--bg); }
 .rep-icon-btn svg   { width: 15px; height: 15px; stroke: var(--slate); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-
+/* Movements table */
 .rep-table { width: 100%; border-collapse: collapse; }
 
 .rep-table thead th {
@@ -1042,6 +1088,9 @@ tbody td  { padding: 14px 0; vertical-align: middle; }
 
 .rep-view-more:hover { background: var(--green-light); }
 
+/* ════════════════════════════════════════════════════
+   NOTIFICATION DROPDOWN
+   ════════════════════════════════════════════════════ */
 .notif-dropdown {
   position: absolute;
   top: calc(100% + 10px);
@@ -1128,6 +1177,9 @@ tbody td  { padding: 14px 0; vertical-align: middle; }
 
 .notif-footer:hover { background: var(--green-light); }
 
+/* ════════════════════════════════════════════════════
+   LOGIN PAGE
+   ════════════════════════════════════════════════════ */
 .login-body {
   margin: 0; padding: 0;
   display: flex; height: 100vh; overflow: hidden;

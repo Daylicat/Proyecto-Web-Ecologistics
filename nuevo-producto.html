@@ -8,15 +8,15 @@
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
-    /* Overlay de éxito al registrar */
+    /* ── Overlays de éxito / categoría ───────────────────────────────────── */
     .np-success-overlay {
-      position: fixed; inset: 0;
-      background: rgba(15,23,42,.55);
-      backdrop-filter: blur(4px);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 300; opacity: 0; pointer-events: none; transition: opacity .25s;
+      position: fixed; inset: 0; background: rgba(15,23,42,.55);
+      backdrop-filter: blur(4px); display: flex; align-items: center;
+      justify-content: center; z-index: 300;
+      opacity: 0; pointer-events: none; transition: opacity .25s;
     }
-    .np-success-overlay.show { opacity: 1; pointer-events: all; }
+    .np-success-overlay.show  { opacity: 1; pointer-events: all; }
+
     .np-success-card {
       background: var(--white); border-radius: 16px; padding: 44px 40px;
       max-width: 400px; width: 90%; text-align: center;
@@ -24,38 +24,75 @@
       transform: scale(.9) translateY(16px); transition: transform .3s;
     }
     .np-success-overlay.show .np-success-card { transform: scale(1) translateY(0); }
+
     .np-success-icon-wrap {
-      width: 68px; height: 68px; background: var(--green-light);
-      border-radius: 50%; display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 22px;
+      width: 68px; height: 68px; background: var(--green-light); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; margin: 0 auto 22px;
     }
     .np-success-icon-wrap svg { width: 34px; height: 34px; stroke: var(--green); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-    .np-success-heading { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -0.3px; }
-    .np-success-sub { font-size: 14px; color: var(--slate); line-height: 1.5; margin-bottom: 28px; }
-    .np-success-sub strong { color: var(--text); font-weight: 600; }
+    .np-success-heading { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .np-success-sub     { font-size: 14px; color: var(--slate); line-height: 1.5; margin-bottom: 28px; }
+
     .np-success-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
     .np-success-btn-inv {
-      padding: 12px; background: var(--green); color: #fff;
-      border: none; border-radius: 9px; font-family: 'DM Sans', sans-serif;
-      font-size: 14px; font-weight: 700; cursor: pointer; transition: background .15s;
+      padding: 12px; background: var(--green); color: #fff; border: none;
+      border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 14px;
+      font-weight: 700; cursor: pointer; transition: background .15s;
     }
     .np-success-btn-inv:hover { background: var(--green-dark); }
+
     .np-success-btn-new {
       padding: 12px; background: var(--white); color: var(--slate);
-      border: 1.5px solid var(--border); border-radius: 9px; font-family: 'DM Sans', sans-serif;
-      font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s;
+      border: 1.5px solid var(--border); border-radius: 9px;
+      font-family: 'DM Sans', sans-serif; font-size: 14px;
+      font-weight: 600; cursor: pointer; transition: background .15s;
     }
     .np-success-btn-new:hover { background: var(--bg); }
-    .np-success-sku {
+
+    .np-sku-chip {
       display: inline-block; font-family: 'DM Mono', monospace;
       background: var(--green-light); color: var(--green-dark);
       padding: 3px 10px; border-radius: 6px; font-size: 13px;
       font-weight: 600; margin-bottom: 16px;
     }
+
+    /* ── Error de formulario ──────────────────────────────────────────────── */
+    #npFormError {
+      display: none;
+      background: #FFF5F5; border: 1px solid var(--red-border);
+      border-radius: 8px; padding: 10px 14px;
+      font-size: 13px; color: var(--red); font-weight: 500;
+      margin-top: 12px;
+    }
+
+    /* ── Responsive ───────────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .np-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .np-right {
+        order: -1;   /* QR arriba en mobile */
+      }
+      .np-main {
+        padding: 20px 16px;
+      }
+      .np-row {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .np-success-card {
+        padding: 28px 20px;
+      }
+      .np-header {
+        padding: 0 16px;
+      }
+    }
   </style>
 </head>
 <body>
-
   <header class="np-header">
     <a href="inventory.html" class="logo">
       <div class="logo-icon">
@@ -74,49 +111,51 @@
       <!-- FORMULARIO -->
       <div class="card np-form-card">
         <h1 class="np-title">Alta de Producto</h1>
-        <p class="np-subtitle">Ingrese los detalles para registrar un nuevo material.</p>
+        <p class="np-subtitle">Ingrese los detalles para registrar un nuevo material en el inventario.</p>
 
         <div class="np-fields">
 
+          <!-- Nombre -->
           <div class="np-group">
-            <label class="np-label">Nombre del Producto</label>
-            <input class="np-input" id="prodName" type="text" placeholder="Ej. Inversor Híbrido 5kW" oninput="onFieldChange()">
+            <label class="np-label">Nombre del Producto <span style="color:var(--red)">*</span></label>
+            <input class="np-input" id="prodName" type="text"
+                   placeholder="Ej. Inversor Híbrido 5kW" oninput="onFieldChange()">
           </div>
 
+          <!-- Categoría + SKU -->
           <div class="np-row">
             <div class="np-group">
-              <label class="np-label">Categoría</label>
-              <select class="np-select" id="prodCategory" onchange="onFieldChange()">
-                <option value="">Seleccionar...</option>
-                <option value="Electrical">Electrical</option>
-                <option value="Solar">Solar</option>
-                <option value="Storage">Storage</option>
-                <option value="Panels">Panels</option>
-                <option value="Cables">Cables</option>
-                <option value="Tools">Tools</option>
+              <label class="np-label">Categoría <span style="color:var(--red)">*</span></label>
+              <!-- Opciones cargadas dinámicamente por nuevo-producto.js -->
+              <select class="np-select" id="prodCategory">
+                <option value="">Cargando...</option>
               </select>
             </div>
             <div class="np-group">
-              <label class="np-label">SKU / Código</label>
-              <input class="np-input" id="prodSku" type="text" placeholder="ECO-INV-001" oninput="onFieldChange()">
+              <label class="np-label">SKU / Código <span style="color:var(--red)">*</span></label>
+              <input class="np-input" id="prodSku" type="text"
+                     placeholder="ECO-INV-001" oninput="onFieldChange()">
             </div>
           </div>
 
+          <!-- Stock Inicial + Stock Mínimo -->
           <div class="np-row">
             <div class="np-group">
               <label class="np-label">Stock Inicial</label>
               <input class="np-input" id="prodStock" type="number" placeholder="0" min="0">
             </div>
             <div class="np-group">
-              <label class="np-label">Stock Mínimo</label>
-              <input class="np-input" id="prodMin" type="number" placeholder="10" min="0">
+              <label class="np-label">Stock Mínimo <span style="color:var(--red)">*</span></label>
+              <input class="np-input" id="prodMin" type="number" placeholder="10" min="1">
             </div>
           </div>
 
+          <!-- Precio Unitario + Unidad -->
           <div class="np-row">
             <div class="np-group">
-              <label class="np-label">Valor Unitario (USD)</label>
-              <input class="np-input" id="prodValor" type="number" placeholder="0.00" min="0" step="0.01" oninput="onFieldChange()">
+              <label class="np-label">Precio Unitario (MXN) <span style="color:var(--red)">*</span></label>
+              <input class="np-input" id="prodValor" type="number"
+                     placeholder="0.00" min="0.01" step="0.01">
             </div>
             <div class="np-group">
               <label class="np-label">Unidad de Medida</label>
@@ -129,19 +168,25 @@
             </div>
           </div>
 
+          <!-- Descripción -->
           <div class="np-group">
             <label class="np-label">Descripción (Opcional)</label>
-            <textarea class="np-textarea" id="prodDesc" placeholder="Detalles técnicos, ubicación o notas..."></textarea>
+            <textarea class="np-textarea" id="prodDesc"
+                      placeholder="Detalles técnicos, ubicación o notas..."></textarea>
           </div>
 
         </div>
 
-        <button class="np-submit" id="npSubmitBtn" onclick="registrar()">Registrar Producto</button>
+        <!-- Error de formulario -->
+        <div id="npFormError"></div>
+
+        <button class="np-submit" id="npSubmitBtn" onclick="registrar()">
+          Registrar Producto
+        </button>
       </div>
 
-      <!-- PANEL DERECHO -->
+      <!-- PANEL DERECHO: QR + TIP -->
       <div class="np-right">
-
         <div class="card np-qr-card">
           <div class="np-qr-label">Vista Previa QR</div>
           <div class="np-qr-wrap" id="qrWrap">
@@ -170,25 +215,30 @@
           </div>
           <div>
             <div class="np-tip-title">Consejo de uso</div>
-            <div class="np-tip-text">Puede imprimir etiquetas QR en masa desde la sección de reportes para productos ya registrados.</div>
+            <div class="np-tip-text">
+              El QR se genera a partir del SKU y nombre del producto.
+              Una vez registrado, queda asociado permanentemente al producto en la base de datos.
+            </div>
           </div>
         </div>
-
       </div>
+
     </div>
   </div>
 
-  <!-- OVERLAY DE ÉXITO -->
+  <!-- Overlay de éxito -->
   <div class="np-success-overlay" id="npSuccessOverlay">
     <div class="np-success-card">
       <div class="np-success-icon-wrap">
         <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
       </div>
       <div class="np-success-heading">¡Producto Registrado!</div>
-      <div id="npSuccessSku" class="np-success-sku"></div>
-      <p class="np-success-sub">El producto <strong id="npSuccessName"></strong> ha sido agregado al inventario correctamente.</p>
+      <div id="npSuccessSku" class="np-sku-chip"></div>
+      <p class="np-success-sub">
+        El producto <strong id="npSuccessName"></strong> ha sido agregado al inventario correctamente.
+      </p>
       <div class="np-success-actions">
-        <button class="np-success-btn-inv" onclick="irAlInventario()">
+        <button class="np-success-btn-inv" onclick="window.location.href='inventory.html'">
           Ir al Inventario
         </button>
         <button class="np-success-btn-new" onclick="registrarOtro()">
@@ -198,8 +248,12 @@
     </div>
   </div>
 
+  <!-- Supabase SDK — OBLIGATORIO antes que los scripts propios -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="api-config.js"></script>
   <script src="auth.js"></script>
   <script src="data.js"></script>
+  <script src="nav.js"></script>
   <script src="nuevo-producto.js"></script>
 </body>
 </html>
