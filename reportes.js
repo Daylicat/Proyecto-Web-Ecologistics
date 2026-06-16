@@ -589,99 +589,34 @@
   // ══════════════════════════════════════════════════════════════════════════
 
   async function exportarPDF() {
-    var btn  = document.querySelector('.rep-export-btn');
+    var btn = document.querySelector('.rep-export-btn');
     var orig = btn.innerHTML;
-    btn.innerHTML = 'Generando PDF...';
-    btn.disabled  = true;
+    btn.innerHTML = 'Generando...';
+    btn.disabled = true;
 
-    var tipo    = document.getElementById('reportType').value;
-    var nombres = {
-      inventario:  'Inventario Actual',
-      salidas:     'Salidas de Almacén',
-      entradas:    'Entradas a Inventario',
-      criticos:    'Productos Críticos',
-      sin_stock:   'Productos Sin Stock',
-      movimientos: 'Historial de Movimientos'
+    
+    var element = document.getElementById('repTableContainer').cloneNode(true);
+    
+    
+    var opt = {
+      margin:       10,
+      filename:     'Reporte_EcoLogistics.pdf',
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
 
-    var usuario  = _sesion ? (_sesion.nombre || _sesion.email || 'Sistema') : 'Sistema';
-    var fechaGen = new Date().toLocaleString('es-MX', {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-      hour: '2-digit', minute: '2-digit'
-    });
-
-    // Resumen ejecutivo para el encabezado del PDF
-    var kpiEls = document.querySelectorAll('#kpiGrid .rep-kpi-card');
-    var resumen = Array.from(kpiEls).map(function (el) {
-      var label = el.querySelector('.rep-kpi-label');
-      var val   = el.querySelector('.rep-kpi-val');
-      return (label ? label.textContent : '') + ': ' + (val ? val.textContent : '');
-    }).join(' · ');
-
-    var container = document.getElementById('repTableContainer').innerHTML;
-
-    var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
-      + '<style>'
-      + 'body{font-family:Arial,sans-serif;padding:20px;font-size:11px;color:#0F172A;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
-      + '.header{display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #2DBE6C;padding-bottom:16px;margin-bottom:20px}'
-      + '.logo{display:flex;align-items:center;gap:10px}'
-      + '.logo-box{width:36px;height:36px;background:#2DBE6C;border-radius:8px;display:flex;align-items:center;justify-content:center}'
-      + '.logo-text{font-size:18px;font-weight:700;color:#0F172A}'
-      + '.report-meta{text-align:right}'
-      + '.report-title{font-size:16px;font-weight:700;color:#0F172A;margin-bottom:3px}'
-      + '.report-sub{font-size:11px;color:#64748B}'
-      + '.summary-box{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:11px;color:#64748B}'
-      + 'table{width:100%;border-collapse:collapse;margin-top:8px;page-break-inside:auto}'
-      + 'tr{page-break-inside:avoid;page-break-after:auto}'
-      + 'th{background:#F8FAFC !important;text-align:left;padding:8px 10px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;border-bottom:2px solid #2DBE6C;color:#64748B}'
-      + 'td{padding:9px 10px;border-bottom:1px solid #E2E8F0;font-size:10px;vertical-align:middle}'
-      + 'tr:nth-child(even){background:#FAFAFA !important}'
-      + '.rep-amount{text-align:right;font-weight:700}'
-      + '.status-badge{padding:2px 8px;border-radius:99px;font-size:9px;font-weight:700;display:inline-block}'
-      + '.status-critico{background:#FFEBEE !important;color:#E53935 !important}'
-      + '.status-bajo{background:#FFFBEB !important;color:#B45309 !important}'
-      + '.status-optimo{background:#DCFCE7 !important;color:#15803D !important}'
-      + '.status-sinstock{background:#F1F5F9 !important;color:#64748B !important}'
-      + '.footer{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-between;font-size:9px;color:#94A3B8;border-top:1px solid #E2E8F0;padding-top:8px}'
-      + '@page{size:A4 landscape;margin:0.5in}'
-      + '</style></head><body>'
-      + '<div class="header">'
-      + '<div class="logo">'
-      + '<div class="logo-box"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 2L3 7l9 5 9-5-9-5zM3 17l9 5 9-5M3 12l9 5 9-5" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>'
-      + '<span class="logo-text">EcoLogistics</span>'
-      + '</div>'
-      + '<div class="report-meta">'
-      + '<div class="report-title">' + san(nombres[tipo] || tipo) + '</div>'
-      + '<div class="report-sub">' + fechaGen + '</div>'
-      + '<div class="report-sub">Generado por: ' + san(usuario) + '</div>'
-      + '</div></div>'
-      + (resumen ? '<div class="summary-box"><strong>Resumen:</strong> ' + san(resumen) + '</div>' : '')
-      + container
-      + '<div class="footer">'
-      + '<span>Documento generado automáticamente por EcoLogistics</span>'
-      + '<span>Confidencial — Solo para uso interno</span>'
-      + '</div>'
-      + '</body></html>';
-
-    // Crear iframe temporal
-    var iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:absolute;width:0;height:0;border:none;';
-    document.body.appendChild(iframe);
-    iframe.contentWindow.document.open();
-    iframe.contentWindow.document.write(html);
-    iframe.contentWindow.document.close();
-
-    // Esperar un instante a que cargue el contenido e invocar la impresión nativa
-    setTimeout(function() {
-      iframe.contentWindow.focus();
-      iframe.contentWindow.print();
-      
-      // Limpieza del DOM y restauración del botón
-      document.body.removeChild(iframe);
+    // Ejecución
+    try {
+      await html2pdf().set(opt).from(element).save();
+    } catch (e) {
+      console.error("Error al generar PDF:", e);
+      alert("No se pudo generar el PDF. Intenta de nuevo.");
+    } finally {
       btn.innerHTML = orig;
-      btn.disabled  = false;
-      registrarExportacion('pdf', tipo);
-    }, 250);
+      btn.disabled = false;
+      registrarExportacion('pdf', document.getElementById('reportType').value);
+    }
   }
   window.exportarPDF = exportarPDF;
 
